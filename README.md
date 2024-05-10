@@ -16,29 +16,33 @@ classDiagram
         * city_event : string
         * state_event : string
         * tickets : Boleteria
-        + Evento(..)
+        + Evento()
         + chance_state() : void
         + edit_data() : void
     }
 
     class EventBar  {
         - type : string
+        + EventBar()
     }
 
     class EventTheater {
         - type : string
         - rent_place : int
+        + EventTheater()
     }
 
     class EventPhilanthropic {
         - type : string
         - sponsors : dict[string, int]
+        + EventPhilanthropic()
     }
 
     class Boleteria {
         - tickets_sold : int
         - courtesies_sold : int
         - tickets : dict[int, Boletas]
+        * Boleteria()
         + create_category()
         + edit_category()
         + define_courtesies()
@@ -54,6 +58,7 @@ classDiagram
         - payment_method : string
         - found_method : string
         - state : bool
+        + Boleta()
     }
 
     class DashBoardManager {
@@ -64,23 +69,30 @@ classDiagram
     
     class Artist {
         - name
-        +show_events()
+        - events : list[string]
+        + Artist()
+        + add_event()
+        + get_events()
     }
     class User {
         - username : string
         - password : string
         - email : string
         - address : string
+        + User()
+        + get_username()
     }
 
     class Admin {
         - events : list[string]
         dashboard_admin : Dash_board_manager
+        + Admin()
         + add_event()
         + get_report()
     }
     class Buyer {
         - tickets : list[int]
+        + Buyer()
         +buy_ticket()
         +get_ticket_pdf
     }
@@ -102,6 +114,7 @@ classDiagram
     class GUIControler {
         - run_page : string
         - gestion_controler : GestionControler
+        + GUIControler()
         + main()
     }
 
@@ -110,10 +123,18 @@ classDiagram
         - users : dict[string, User]
         - artistas : dict[string , Artist]
         - reporte : Report
+        + GestionControler()
+        + creation_event()
+        + elimination_event()
+        + buying_tickets()
+        + generate_report()
+        + edit_event()
+        + entry_event()
     }
 
     class Report {
         * evento : Evento
+        + Report()
         + generar()
     }
 
