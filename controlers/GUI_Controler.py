@@ -7,6 +7,6 @@ class GUIController:
         self.gestion_controler = GestionControler()
 
 
-def main(self):
-    if self.run_page == 'main':
-        draw_admin_page(self)
+    def main(self):
+        if self.run_page == 'main':
+            draw_admin_page(self)
