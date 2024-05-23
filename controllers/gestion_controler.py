@@ -8,6 +8,7 @@ from model.events.Event_theater import EventTheater
 from model.Artist import Artist
 from model.User import User
 
+
 class GestionController:
     def __init__(self):
         self.events_bar = {}
@@ -51,13 +52,13 @@ class GestionController:
         else:
             evento = self.events_philanthropic[nombre_evento]
             patrocinadores = evento.get_financiero_info()
-            generar_reporte_financiero_filantropico(patrocinadores,nombre_evento)
+            generar_reporte_financiero_filantropico(patrocinadores, nombre_evento)
 
     def generar_reporte_compradores(self, nombre_evento, tipo_evento):
         compradores_list = []
         for comprador in self.users:
             id_boletas_list = comprador.id_boletas
-            if nombre_evento in  id_boletas_list.keys():
+            if nombre_evento in id_boletas_list.keys():
                 compradores_list.append(comprador)
         generar_reporte_compradores(compradores_list, nombre_evento)
 
@@ -66,14 +67,14 @@ class GestionController:
         artista_dict = {}
         for artista in artistas:
             flag = False
-            artista_name_list.append(artista.name)
-            artista_dict[artista.name] = artista.tarifa
+            artista_name_list.append(artista["nombre"])
+            artista_dict[artista["nombre"]] = artista["tarifa"]
             for artista_guardado in self.artist:
                 if artista_guardado.nombre == artista.nombre:
                     artista_guardado.add_event(nombre_evento)
                     flag = True
             if not flag:
-                self.artist[artista.nombre] = (Artist(artista.nombre, nombre_evento))
+                self.artist[artista["nombre"]] = (Artist(artista["nombre"], nombre_evento))
         return artista_name_list, artista_dict
 
     def mostrar_categorias(self, tipo, nombre_evento):
@@ -132,10 +133,26 @@ class GestionController:
     def crear_evento_bar(self, nombre_evento, fecha_evento, hora_apertura,
                          hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa):
         aux, artista_dict = self.guardar_artistas(artistas, nombre_evento)
-        self.events_bar[nombre_evento] = \
-            (EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                      ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa))
+        evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
+                          ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa)
+        self.events_bar[nombre_evento] = evento
 
+    def get_events(self, tipo):
+        eventos = self.events_bar
+        if tipo == "Bar":
+            eventos = self.events_bar
+        elif tipo == "Filantropico":
+            eventos= self.events_philanthropic
+        else:
+            eventos = self.events_theater
+
+        for evento in eventos:
+            st.write(evento.nombre)
+        if eventos:
+            return eventos
+        else:
+            st.write("no se creaaa")
+            return None
     def crear_evento_filantropico(self, nombre_evento, fecha_evento, hora_apertura,
                                   hora_show, ubicacion, ciudad, direccion, patrocinadores, artistas):
         artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)

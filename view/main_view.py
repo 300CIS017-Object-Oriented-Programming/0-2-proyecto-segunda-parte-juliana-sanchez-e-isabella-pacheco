@@ -2,7 +2,6 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from settings import LOGO_HTML_CONFIG
 
-from controllers import gui_controler
 
 
 def navegation_sidebar(gui_controler):
@@ -113,7 +112,7 @@ def dibujar_crear_evento_filantropico(gui_controler):
         gui_controler.gestion_controler.crear_evento_filantropico(nombre_evento, fecha_evento, hora_apertura,
                                                                   hora_show, ubicacion, ciudad, direccion,
                                                                   patrocinadores, artistas)
-
+        st.success("¡Evento guardado exitosamente!")
 
 def dibujar_crear_evento_bar(gui_controler):
     st.subheader("Crear Evento Bar")
@@ -146,7 +145,7 @@ def dibujar_crear_evento_bar(gui_controler):
         gui_controler.gestion_controler.crear_evento_bar(nombre_evento, fecha_evento, hora_apertura,
                                                          hora_show, ubicacion, ciudad, direccion,
                                                          categorias, comediantes, porcentaje_reduccion_preventa)
-    st.success("¡Evento guardado exitosamente!")
+        st.success("¡Evento guardado exitosamente!")
 
 
 def dibujar_crear_evento_teatro(gui_controler):
@@ -180,7 +179,7 @@ def dibujar_crear_evento_teatro(gui_controler):
         gui_controler.gestion_controler.crear_evento_teatro(nombre_evento, fecha_evento, hora_apertura,
                                                             hora_show, ubicacion, ciudad, direccion,
                                                             categorias, artistas, costo_alquiler, porcentaje_reduccion_preventa)
-
+        st.success("¡Evento guardado exitosamente!")
 
 def dibujar_comprar_boletas(gui_controler):
     st.subheader("Comprar Boletas")

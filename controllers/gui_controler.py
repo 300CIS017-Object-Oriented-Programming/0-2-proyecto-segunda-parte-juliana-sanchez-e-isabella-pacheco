@@ -13,9 +13,11 @@ class GUIController:
     def main(self):
         if self.run_page == 'main':
             draw_admin_page(self)
+
     def get_artistas(self):
         artistas_names = self.gestion_controler.artist.keys()
         return list(artistas_names)
+
     def sidebar_option_menu(self, opcion_seleccionada):
         if opcion_seleccionada == "Ver eventos creados":
             dibujar_eventos_creados(self)
@@ -82,39 +84,36 @@ class GUIController:
         self.gestion_controler.guardar_user_info(nombre_comprador, telefono, correo, direccion, id_boletas)
 
     def filtrar_eventos_guardados(self, opcion_seleccionada):
-        if opcion_seleccionada == "Bar":
-            eventos_filtrados = self.gestion_controler.events_bar
-        elif opcion_seleccionada == "Filantropico":
-            eventos_filtrados = self.gestion_controler.events_philanthropic
+        eventos_filtrados = self.gestion_controler.get_events(opcion_seleccionada)
+        if eventos_filtrados:
+            for evento in eventos_filtrados:
+                alquiler = 0
+                st.write("Nombre:", evento.nombre)
+                st.write("Ubicación:", evento.ubicacion)
+                st.write("Fecha:", evento.fecha)
+                st.write("Estado:", evento.estado)
+                if opcion_seleccionada == "teatro":
+                    alquiler = evento.alquiler
+                # Verificar si el estado del evento es "realizado"
+                if evento.estado != "Realizado":
+                    # Mostrar botón de editar
+                    if st.button(f"Editar {evento['nombre']}"):
+                        evento_info = [
+                            {"nombre": evento.nombre},
+                            {"ubicacion": evento.ubicacion},
+                            {"fecha": evento.fecha},
+                            {"estado": evento.estado},
+                            {"categoria": evento.categoria},
+                            {"hora_apertura": evento.hora_apertura},
+                            {"hora_show": evento.hora_show},
+                            {"ciudad": evento.ciudad},
+                            {"direccion": evento.direccion},
+                            {"alquiler": alquiler},
+                                       ]
+                        dibujar_editar_evento(self, evento_info, opcion_seleccionada)
+                else:
+                    st.write("El evento ya está realizado y no se puede editar.")
+                st.write("---")
         else:
-            eventos_filtrados = self.gestion_controler.events_theater
-
-        for evento in eventos_filtrados:
-            alquiler = 0
-            st.write("Nombre:", evento.nombre)
-            st.write("Ubicación:", evento.ubicacion)
-            st.write("Fecha:", evento.fecha)
-            st.write("Estado:", evento.estado)
-            if opcion_seleccionada == "teatro":
-                alquiler = evento.alquiler
-            # Verificar si el estado del evento es "realizado"
-            if evento.estado != "Realizado":
-                # Mostrar botón de editar
-                if st.button(f"Editar {evento['nombre']}"):
-                    evento_info = [
-                        {"nombre": evento.nombre},
-                        {"ubicacion": evento.ubicacion},
-                        {"fecha": evento.fecha},
-                        {"estado": evento.estado},
-                        {"categoria": evento.categoria},
-                        {"hora_apertura": evento.hora_apertura},
-                        {"hora_show": evento.hora_show},
-                        {"ciudad": evento.ciudad},
-                        {"direccion": evento.direccion},
-                        {"alquiler": alquiler},
-                                   ]
-                    dibujar_editar_evento(self, evento_info, opcion_seleccionada)
-            else:
-                st.write("El evento ya está realizado y no se puede editar.")
-            st.write("---")
+            st.write("No hay eventos")
 
