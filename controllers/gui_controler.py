@@ -1,12 +1,120 @@
+import streamlit as st
 from controllers.gestion_controler import  GestionController
-from view.main_view import draw_admin_page
+from view.main_view import (draw_admin_page, dibujar_eventos_creados, dibujar_crear_evento_bar,
+                            dibujar_crear_evento_filantropico, dibujar_crear_evento_teatro,
+                            dibujar_comprar_boletas, dibujar_generar_reporte, dibujar_editar_evento)
+
 
 class GUIController:
     def __init__(self):
         self.run_page = 'main'
         self.gestion_controler = GestionController()
 
-
     def main(self):
         if self.run_page == 'main':
             draw_admin_page(self)
+    def get_artistas(self):
+        artistas_names = self.gestion_controler.artist.keys()
+        return list(artistas_names)
+    def sidebar_option_menu(self, opcion_seleccionada):
+        if opcion_seleccionada == "Ver eventos creados":
+            dibujar_eventos_creados(self)
+        elif opcion_seleccionada == "Crear evento Bar":
+            dibujar_crear_evento_bar(self)
+        elif opcion_seleccionada == "Crear evento Filantrópico":
+            dibujar_crear_evento_filantropico(self)
+        elif opcion_seleccionada == "Crear evento Teatro":
+            dibujar_crear_evento_teatro(self)
+        elif opcion_seleccionada == "Comprar boletas":
+            dibujar_comprar_boletas(self)
+        elif opcion_seleccionada == "Generar reporte":
+            dibujar_generar_reporte(self)
+
+    def generar_reporte(self, tipo_reporte, nombre, tipo):
+        if tipo_reporte == "Reporte de los Artistas":
+            self.gestion_controler.generar_reporte_artistas(nombre)
+        elif tipo_reporte == "Reporte de Ventas":
+            self.gestion_controler.generar_reporte_ventas(nombre, tipo)
+        elif tipo_reporte == "Reporte Financiero":
+            self.gestion_controler.generar_reporte_financiero(nombre, tipo)
+        else:
+            self.gestion_controler.generar_reporte_compradores(nombre, tipo)
+
+    def get_nombres_eventos(self, opcion_seleccionada):
+        if opcion_seleccionada == "Bar":
+            eventos_name_list = self.gestion_controler.events_bar.keys()
+        elif opcion_seleccionada == "Teatro":
+            eventos_name_list = self.gestion_controler.events_theater.keys()
+        else:
+            eventos_name_list = self.gestion_controler.events_philanthropic.keys()
+
+        nombres_eventos = list(eventos_name_list)
+
+        if not nombres_eventos:
+            st.warning(f"No hay eventos disponibles para el tipo '{opcion_seleccionada}'.")
+            return None
+
+        evento_seleccionado = st.selectbox("Selecciona el evento:", nombres_eventos)
+        return evento_seleccionado
+
+    def comprar_categoria(self, nombre_evento, opcion_seleccionada, cantidad_boletas):
+        categoria_elegida = None
+        if opcion_seleccionada != "Filantropico":
+            st.subheader("Selecciona la categoría:")
+            categorias,porcentaje = self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada)
+            nombre_categorias = [categoria["nombre"] for categoria in categorias]
+            categoria_elegida = st.selectbox("Categoría:", nombre_categorias)
+
+            # Obtener el costo de la categoría seleccionada
+            costo_categoria = next((c["costo"] for c in categorias if c["nombre"] == categoria_elegida), 0)
+            total = cantidad_boletas * costo_categoria * porcentaje
+            if porcentaje < 1:
+                st.write(f"Se le está aplicando un {porcentaje*100}% de descuento por estar comprando en preventa")
+            st.write(f"Total a pagar: ${total}")
+        else:
+            st.write("Entrada gratuita")
+        return categoria_elegida
+
+    def guardar_info_boleta(self, nombre_comprador, telefono, correo, direccion, evento_seleccionado,
+                            cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo):
+        id_boletas = self.gestion_controler.guardar_boletas(nombre_comprador, tipo, evento_seleccionado,
+                                                            cantidad_boletas, donde_conocio, metodo_pago, categoria)
+        self.gestion_controler.guardar_user_info(nombre_comprador, telefono, correo, direccion, id_boletas)
+
+    def filtrar_eventos_guardados(self, opcion_seleccionada):
+        if opcion_seleccionada == "Bar":
+            eventos_filtrados = self.gestion_controler.events_bar
+        elif opcion_seleccionada == "Filantropico":
+            eventos_filtrados = self.gestion_controler.events_philanthropic
+        else:
+            eventos_filtrados = self.gestion_controler.events_theater
+
+        for evento in eventos_filtrados:
+            alquiler = 0
+            st.write("Nombre:", evento.nombre)
+            st.write("Ubicación:", evento.ubicacion)
+            st.write("Fecha:", evento.fecha)
+            st.write("Estado:", evento.estado)
+            if opcion_seleccionada == "teatro":
+                alquiler = evento.alquiler
+            # Verificar si el estado del evento es "realizado"
+            if evento.estado != "Realizado":
+                # Mostrar botón de editar
+                if st.button(f"Editar {evento['nombre']}"):
+                    evento_info = [
+                        {"nombre": evento.nombre},
+                        {"ubicacion": evento.ubicacion},
+                        {"fecha": evento.fecha},
+                        {"estado": evento.estado},
+                        {"categoria": evento.categoria},
+                        {"hora_apertura": evento.hora_apertura},
+                        {"hora_show": evento.hora_show},
+                        {"ciudad": evento.ciudad},
+                        {"direccion": evento.direccion},
+                        {"alquiler": alquiler},
+                                   ]
+                    dibujar_editar_evento(self, evento_info, opcion_seleccionada)
+            else:
+                st.write("El evento ya está realizado y no se puede editar.")
+            st.write("---")
+

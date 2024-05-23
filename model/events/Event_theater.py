@@ -1,6 +1,25 @@
 from model.Event import Event
 
 class EventTheater(Event):
-    def __init__(self, event_name, artist_name, event_place,event_date,opening_event_time, direccion_event,event_city,sponsor_list) -> None:
-        super().__init__(event_name, artist_name, event_place,event_date,opening_event_time, direccion_event,event_city)
-        self.sponsors = sponsor_list
+    def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion,
+                 artistas, alquiler, categorias, porcentaje_preventa) -> None:
+        super().__init__(nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas)
+        self.alquiler_price = alquiler
+        self.categorias = categorias
+        self.porcentaje_preventa = porcentaje_preventa/100
+        self.estado_preventa = True
+
+    def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
+               hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo):
+        if self.fecha != fecha_evento_nuevo:
+            self.estado = "Aplazado"
+        else:
+            self.estado = estado_nuevo
+        self.nombre = nombre_nuevo
+        self.fecha = fecha_evento_nuevo
+        self.hora_apertura = hora_apertura_nuevo
+        self.hora_show = hora_show_nuevo
+        self.ubicacion = ubicacion_nuevo
+        self.ciudad = ciudad_nuevo
+        self.direccion = direccion_nuevo
+        self.alquiler_price = costo_alquiler_nuevo
