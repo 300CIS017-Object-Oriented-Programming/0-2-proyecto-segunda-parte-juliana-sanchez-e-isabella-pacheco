@@ -14,5 +14,5 @@ def generar_reporte_financiero_filantropico(patrocinadores,nombre_evento):
 def generar_reporte_financiero_teatro(ingresos_metodo_pago, ingresos_categorias,alquiler,nombre_evento):
     pass
 
-def generar_reporte_compradores(compradores_list, nombre_evento):
+def generar_reporte_compradores(l,k):
     pass

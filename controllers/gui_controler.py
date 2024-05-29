@@ -7,8 +7,13 @@ from view.main_view import (draw_admin_page, dibujar_eventos_creados, dibujar_cr
 
 class GUIController:
     def __init__(self):
-        self.run_page = 'main'
-        self.gestion_controler = GestionController()
+        if 'my_state' not in st.session_state:
+            self.run_page = 'main'
+            self.gestion_controler = GestionController()
+            st.session_state['my_state'] = self
+        else:
+            self.gestion_controler = st.session_state.my_state.gestion_controler
+            self.run_page = st.session_state.my_state.run_page
 
     def main(self):
         if self.run_page == 'main':
@@ -86,7 +91,7 @@ class GUIController:
     def filtrar_eventos_guardados(self, opcion_seleccionada):
         eventos_filtrados = self.gestion_controler.get_events(opcion_seleccionada)
         if eventos_filtrados:
-            for evento in eventos_filtrados:
+            for evento in eventos_filtrados.values():
                 alquiler = 0
                 st.write("Nombre:", evento.nombre)
                 st.write("Ubicación:", evento.ubicacion)
@@ -97,19 +102,18 @@ class GUIController:
                 # Verificar si el estado del evento es "realizado"
                 if evento.estado != "Realizado":
                     # Mostrar botón de editar
-                    if st.button(f"Editar {evento['nombre']}"):
-                        evento_info = [
-                            {"nombre": evento.nombre},
-                            {"ubicacion": evento.ubicacion},
-                            {"fecha": evento.fecha},
-                            {"estado": evento.estado},
-                            {"categoria": evento.categoria},
-                            {"hora_apertura": evento.hora_apertura},
-                            {"hora_show": evento.hora_show},
-                            {"ciudad": evento.ciudad},
-                            {"direccion": evento.direccion},
-                            {"alquiler": alquiler},
-                                       ]
+                    if st.button(f"Editar {evento.nombre}"):
+                        evento_info = {
+                            "nombre": evento.nombre,
+                            "ubicacion": evento.ubicacion,
+                            "fecha": evento.fecha,
+                            "estado": evento.estado,
+                            "hora_apertura": evento.hora_apertura,
+                            "hora_show": evento.hora_show,
+                            "ciudad": evento.ciudad,
+                            "direccion": evento.direccion,
+                            "alquiler": alquiler,
+                                        }
                         dibujar_editar_evento(self, evento_info, opcion_seleccionada)
                 else:
                     st.write("El evento ya está realizado y no se puede editar.")

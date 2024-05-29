@@ -1,7 +1,8 @@
 import streamlit as st
 
 from view.reporte import (generar_reporte_artistas, generar_reporte_ventas, generar_reporte_financiero_bar,
-                          generar_reporte_financiero_teatro, generar_reporte_financiero_filantropico, generar_reporte_compradores)
+                          generar_reporte_financiero_teatro, generar_reporte_financiero_filantropico,
+                          generar_reporte_compradores)
 from model.events.Event_bar import EventBar 
 from model.events.Event_philanthropic import EventPhilanthropic
 from model.events.Event_theater import EventTheater
@@ -16,6 +17,7 @@ class GestionController:
         self.events_philanthropic = {}
         self.artist = {}
         self.users = {}
+        self.letra = "a"
 
     def guardar_user_info(self, nombre_comprador, telefono, correo, direccion,id_boletas):
         if nombre_comprador not in self.users.keys():
@@ -69,8 +71,8 @@ class GestionController:
             flag = False
             artista_name_list.append(artista["nombre"])
             artista_dict[artista["nombre"]] = artista["tarifa"]
-            for artista_guardado in self.artist:
-                if artista_guardado.nombre == artista.nombre:
+            for artista_guardado in self.artist.values():
+                if artista_guardado.nombre == artista["nombre"]:
                     artista_guardado.add_event(nombre_evento)
                     flag = True
             if not flag:
@@ -135,24 +137,24 @@ class GestionController:
         aux, artista_dict = self.guardar_artistas(artistas, nombre_evento)
         evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
                           ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa)
+        self.letra = "b"
         self.events_bar[nombre_evento] = evento
+        st.write(self.events_bar[nombre_evento].nombre)
 
     def get_events(self, tipo):
-        eventos = self.events_bar
         if tipo == "Bar":
             eventos = self.events_bar
-        elif tipo == "Filantropico":
+        elif tipo == "Filantrópico":
             eventos= self.events_philanthropic
         else:
             eventos = self.events_theater
 
-        for evento in eventos:
-            st.write(evento.nombre)
         if eventos:
             return eventos
         else:
-            st.write("no se creaaa")
+            st.write("No se han encontrado eventos")
             return None
+
     def crear_evento_filantropico(self, nombre_evento, fecha_evento, hora_apertura,
                                   hora_show, ubicacion, ciudad, direccion, patrocinadores, artistas):
         artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)

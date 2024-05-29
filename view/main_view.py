@@ -9,8 +9,7 @@ def navegation_sidebar(gui_controler):
         opcion_seleccionada = option_menu("Navegación",
                                           ["Ver eventos creados", "Crear evento Bar",
                                            "Crear evento Filantrópico", "Crear evento Teatro",
-                                           "Comprar boletas", "Generar reporte Ventas", "Generar reporte Artistas",
-                                           "Generar reporte Compradores"], orientation="vertical")
+                                           "Comprar boletas", "Generar reporte"], orientation="vertical")
     gui_controler.sidebar_option_menu(opcion_seleccionada)
 
 
@@ -33,55 +32,55 @@ def dibujar_eventos_creados(gui_controler):
 
 
 def dibujar_editar_evento(gui_controler, evento, tipo):
-    st.subheader(f"Editar Evento {evento['nombre']}")
+    submit_button = False
+    while not submit_button:
+        nombre = evento["nombre"]
+        st.subheader(f"Editar Evento {nombre}")
+        with st.form(key="editar_evento_form"):
 
-    # Campos de entrada para editar la información del evento
-    nombre_evento = st.empty()
-    nombre_evento_input = nombre_evento.text_input("Nombre del evento", value=evento["nombre"])
+            # Campos de entrada para editar la información del evento
 
-    fecha_evento = st.empty()
-    fecha_evento_input = fecha_evento.date_input("Fecha del evento", value=evento["fecha"])
+            nombre_evento_input = st.text_input("Nombre del evento", value=evento["nombre"], key="nombre_evento")
 
-    hora_apertura = st.empty()
-    hora_apertura_input = hora_apertura.time_input("Hora de apertura", value=evento["hora_apertura"])
+            fecha_evento_input = st.date_input("Fecha del evento", value=evento["fecha"], key="fecha_evento")
 
-    hora_show = st.empty()
-    hora_show_input = hora_show.time_input("Hora del show", value=evento["hora_show"])
+            hora_apertura_input = st.time_input("Hora de apertura", value=evento["hora_apertura"], key="hora_apertura_evento")
 
-    ubicacion = st.empty()
-    ubicacion_input = ubicacion.text_input("Ubicación del evento", value=evento["ubicacion"])
+            hora_show_input = st.time_input("Hora del show", value=evento["hora_show"], key="hora_show_evento")
 
-    ciudad = st.empty()
-    ciudad_input = ciudad.text_input("Ciudad del evento", value=evento["ciudad"])
+            ubicacion_input = st.text_input("Ubicación del evento", value=evento["ubicacion"], key="ubicacion_evento")
 
-    direccion = st.empty()
-    direccion_input = direccion.text_input("Dirección", value=evento["direccion"])
+            ciudad_input = st.text_input("Ciudad del evento", value=evento["ciudad"], key="ciudad_evento")
 
-    estado = st.empty()
-    estado_input = estado.selectbox("Estado del evento", ["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"], index=["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"].index(evento["estado"].capitalize()))
-    
-    # Solo permitir editar el costo del alquiler para eventos de tipo "Teatro"
-    if tipo == "Teatro":
-        costo_alquiler = st.empty()
-        costo_alquiler_input = costo_alquiler.number_input("Costo alquiler", value=float(evento["alquiler"]), min_value=0.0)
+            direccion_input = st.text_input("Dirección", value=evento["direccion"], key="direccion_evento")
 
-    # Guardar los cambios si se hace clic en el botón
-    if st.button("Guardar cambios"):
-        if tipo == "Teatro":
-            gui_controler.gestion_controler.editar_evento_teatro(evento["nombre"], nombre_evento_input, fecha_evento_input,
-                                               hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                               direccion_input, estado_input, costo_alquiler_input)
-        elif tipo == "Bar":
-            gui_controler.gestion_controler.editar_evento_bar(evento["nombre"], nombre_evento_input, fecha_evento_input,
-                                            hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                            direccion_input, estado_input)
-        else:
-            gui_controler.gestion_controler.editar_evento_filantropico(evento["nombre"], nombre_evento_input, fecha_evento_input,
-                                                     hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                                     direccion_input, estado_input)
+            estado_input = st.selectbox("Estado del evento", ["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"],
+                                  index=["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"].index(
+                                      evento["estado"].capitalize()), key="estado_evento")
 
-        st.success("¡Evento actualizado exitosamente!")
-        st.experimental_rerun()  # Recargar la página para reflejar los cambios
+            # Solo permitir editar el costo del alquiler para eventos de tipo "Teatro"
+            if tipo == "Teatro":
+                costo_alquiler_input = st.number_input("Costo alquiler", value=float(evento["alquiler"]), min_value=0.0)
+                evento["alquiler"] = costo_alquiler_input
+
+            # Guardar los cambios si se hace clic en el botón
+            submit_button = st.form_submit_button(label="Guardar cambios")
+            if submit_button:
+                if tipo == "Teatro":
+                    gui_controler.gestion_controler.editar_evento_teatro(evento["nombre"], nombre_evento_input, fecha_evento_input,
+                                                       hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
+                                                       direccion_input, estado_input, costo_alquiler_input)
+                elif tipo == "Bar":
+                    gui_controler.gestion_controler.editar_evento_bar(evento["nombre"], nombre_evento_input, fecha_evento_input,
+                                                    hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
+                                                    direccion_input, estado_input)
+                    st.write("Bar guardado")
+                else:
+                    gui_controler.gestion_controler.editar_evento_filantropico(evento["nombre"], nombre_evento_input, fecha_evento_input,
+                                                             hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
+                                                             direccion_input, estado_input)
+
+                st.success("¡Evento actualizado exitosamente!")
 
 
 def dibujar_crear_evento_filantropico(gui_controler):
@@ -137,7 +136,8 @@ def dibujar_crear_evento_bar(gui_controler):
     num_comediantes = st.number_input("Número de comediantes participantes", min_value=1, value=1)
     comediantes = []
     for i in range(num_comediantes):
-        nombre_comediante = st.text_input(f"Nombre del comediante {i+1}")
+        nombre_comediante = st.text_input(f"Nombre"
+                                          f" del comediante {i+1}")
         tarifa_comediante = st.number_input(f"Tarifa del comediante {i+1}", min_value=0.0)
         comediantes.append({"nombre": nombre_comediante, "tarifa": tarifa_comediante})
 
@@ -158,7 +158,8 @@ def dibujar_crear_evento_teatro(gui_controler):
     ubicacion = st.text_input("Ubicación del evento")
     ciudad = st.text_input("Ciudad del evento")
     direccion = st.text_input("Dirección")
-    porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,value=0.0)
+    porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,
+                                                    value=0.0)
     num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
 
     categorias = {}
@@ -199,36 +200,37 @@ def dibujar_comprar_boletas(gui_controler):
     evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento)
 
     # Seleccion categoria
-    categoria = gui_controler.comprar_categoria(evento_seleccionado, tipo_evento, cantidad_boletas)
+    if evento_seleccionado:
+        categoria = gui_controler.comprar_categoria(evento_seleccionado, tipo_evento, cantidad_boletas)
 
-    metodo_pago = st.selectbox("Método de pago", ["Tarjeta de crédito", "Transferencia bancaria", "Efectivo"])
+        metodo_pago = st.selectbox("Método de pago", ["Tarjeta de crédito", "Transferencia bancaria", "Efectivo"])
 
-    if st.button("Comprar"):
-        gui_controler.guardar_info_boletas(nombre_comprador, telefono, correo, direccion, evento_seleccionado,
-                                           cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo_evento)
-        st.success("¡Compra realizada exitosamente!")
+        if st.button("Comprar"):
+            gui_controler.guardar_info_boletas(nombre_comprador, telefono, correo, direccion, evento_seleccionado,
+                                               cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo_evento)
+            st.success("¡Compra realizada exitosamente!")
 
-        for i in range(cantidad_boletas):
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Helvetica", size=12)
-            pdf.cell(200, 10, txt=f"Boleta {i + 1}", ln=True, align='C')
-            pdf.cell(200, 10, txt=f"Nombre del comprador: {nombre_comprador}", ln=True)
-            pdf.cell(200, 10, txt=f"Teléfono: {telefono}", ln=True)
-            pdf.cell(200, 10, txt=f"Correo electrónico: {correo}", ln=True)
-            pdf.cell(200, 10, txt=f"Dirección: {direccion}", ln=True)
-            pdf.cell(200, 10, txt=f"¿Dónde nos conoció?: {donde_conocio}", ln=True)
-            pdf.cell(200, 10, txt=f"Evento: {evento_seleccionado}", ln=True)
-            pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
-            pdf.cell(200, 10, txt=f"Método de pago: {metodo_pago}", ln=True)
+            for i in range(cantidad_boletas):
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Helvetica", size=12)
+                pdf.cell(200, 10, txt=f"Boleta {i + 1}", ln=True, align='C')
+                pdf.cell(200, 10, txt=f"Nombre del comprador: {nombre_comprador}", ln=True)
+                pdf.cell(200, 10, txt=f"Teléfono: {telefono}", ln=True)
+                pdf.cell(200, 10, txt=f"Correo electrónico: {correo}", ln=True)
+                pdf.cell(200, 10, txt=f"Dirección: {direccion}", ln=True)
+                pdf.cell(200, 10, txt=f"¿Dónde nos conoció?: {donde_conocio}", ln=True)
+                pdf.cell(200, 10, txt=f"Evento: {evento_seleccionado}", ln=True)
+                pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
+                pdf.cell(200, 10, txt=f"Método de pago: {metodo_pago}", ln=True)
 
-            # Guardar el PDF en memoria
-            pdf_output = pdf.output(dest='S').encode('latin1')
-            pdf_base64 = base64.b64encode(pdf_output).decode('latin1')
+                # Guardar el PDF en memoria
+                pdf_output = pdf.output(dest='S').encode('latin1')
+                pdf_base64 = base64.b64encode(pdf_output).decode('latin1')
 
-            # Crear enlace de descarga (lo voy a volver un botoncito)
-            href = f'<a href="data:application/octet-stream;base64,{pdf_base64}" download="boleta_{nombre_comprador.replace(" ", "")}{i + 1}.pdf">Descargar Boleta {i + 1}</a>'
-            st.markdown(href, unsafe_allow_html=True)
+                # Crear enlace de descarga (lo voy a volver un botoncito)
+                href = f'<a href="data:application/octet-stream;base64,{pdf_base64}" download="boleta_{nombre_comprador.replace(" ", "")}{i + 1}.pdf">Descargar Boleta {i + 1}</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
 def dibujar_generar_reporte(gui_controler):
     st.subheader("Generar reporte")
