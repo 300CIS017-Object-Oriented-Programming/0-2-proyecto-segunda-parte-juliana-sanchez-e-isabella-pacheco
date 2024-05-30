@@ -63,7 +63,7 @@ def dibujar_editar_evento(gui_controler, evento, tipo):
 
     direccion_input = st.text_input("Dirección", value=evento["direccion"], key="direccion_evento")
 
-    aforo_input = st.number_input()
+    aforo_input = st.number_input("Aforo", value=evento["aforo"], key="aforo_evento")
 
     estado_input = st.selectbox("Estado del evento", ["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"],
                           index=["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"].index(
@@ -81,16 +81,16 @@ def dibujar_editar_evento(gui_controler, evento, tipo):
         if tipo == "Teatro":
             gui_controler.gestion_controler.editar_evento_teatro(nombre, fecha_evento_input,
                                                hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                               direccion_input, estado_input, costo_alquiler_input, preventa_estado_input)
+                                               direccion_input, estado_input, costo_alquiler_input, preventa_estado_input, aforo_input)
         elif tipo == "Bar":
             gui_controler.gestion_controler.editar_evento_bar(nombre, fecha_evento_input,
                                             hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                            direccion_input, estado_input, preventa_estado_input)
+                                            direccion_input, estado_input, preventa_estado_input, aforo_input)
             st.write("Bar guardado")
         else:
             gui_controler.gestion_controler.editar_evento_filantropico(nombre, fecha_evento_input,
                                                      hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                                     direccion_input, estado_input)
+                                                     direccion_input, estado_input, aforo_input)
 
         st.success("¡Evento actualizado exitosamente!")
 
@@ -216,35 +216,35 @@ def dibujar_comprar_boletas(gui_controler):
     # Seleccion categoria
     if evento_seleccionado:
         categoria = gui_controler.comprar_categoria(evento_seleccionado, tipo_evento, cantidad_boletas)
+        if categoria is not None:
+            metodo_pago = st.selectbox("Método de pago", ["Tarjeta de crédito", "Transferencia bancaria", "Efectivo"])
 
-        metodo_pago = st.selectbox("Método de pago", ["Tarjeta de crédito", "Transferencia bancaria", "Efectivo"])
+            if st.button("Comprar"):
+                gui_controler.guardar_info_boletas(nombre_comprador, telefono, correo, direccion, evento_seleccionado,
+                                                   cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo_evento)
+                st.success("¡Compra realizada exitosamente!")
 
-        if st.button("Comprar"):
-            gui_controler.guardar_info_boletas(nombre_comprador, telefono, correo, direccion, evento_seleccionado,
-                                               cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo_evento)
-            st.success("¡Compra realizada exitosamente!")
+                for i in range(cantidad_boletas):
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Helvetica", size=12)
+                    pdf.cell(200, 10, txt=f"Boleta {i + 1}", ln=True, align='C')
+                    pdf.cell(200, 10, txt=f"Nombre del comprador: {nombre_comprador}", ln=True)
+                    pdf.cell(200, 10, txt=f"Teléfono: {telefono}", ln=True)
+                    pdf.cell(200, 10, txt=f"Correo electrónico: {correo}", ln=True)
+                    pdf.cell(200, 10, txt=f"Dirección: {direccion}", ln=True)
+                    pdf.cell(200, 10, txt=f"¿Dónde nos conoció?: {donde_conocio}", ln=True)
+                    pdf.cell(200, 10, txt=f"Evento: {evento_seleccionado}", ln=True)
+                    pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
+                    pdf.cell(200, 10, txt=f"Método de pago: {metodo_pago}", ln=True)
 
-            for i in range(cantidad_boletas):
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_font("Helvetica", size=12)
-                pdf.cell(200, 10, txt=f"Boleta {i + 1}", ln=True, align='C')
-                pdf.cell(200, 10, txt=f"Nombre del comprador: {nombre_comprador}", ln=True)
-                pdf.cell(200, 10, txt=f"Teléfono: {telefono}", ln=True)
-                pdf.cell(200, 10, txt=f"Correo electrónico: {correo}", ln=True)
-                pdf.cell(200, 10, txt=f"Dirección: {direccion}", ln=True)
-                pdf.cell(200, 10, txt=f"¿Dónde nos conoció?: {donde_conocio}", ln=True)
-                pdf.cell(200, 10, txt=f"Evento: {evento_seleccionado}", ln=True)
-                pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
-                pdf.cell(200, 10, txt=f"Método de pago: {metodo_pago}", ln=True)
+                    # Guardar el PDF en memoria
+                    pdf_output = pdf.output(dest='S').encode('latin1')
+                    pdf_base64 = base64.b64encode(pdf_output).decode('latin1')
 
-                # Guardar el PDF en memoria
-                pdf_output = pdf.output(dest='S').encode('latin1')
-                pdf_base64 = base64.b64encode(pdf_output).decode('latin1')
-
-                # Crear enlace de descarga (lo voy a volver un botoncito)
-                href = f'<a href="data:application/octet-stream;base64,{pdf_base64}" download="boleta_{nombre_comprador.replace(" ", "")}{i + 1}.pdf">Descargar Boleta {i + 1}</a>'
-                st.markdown(href, unsafe_allow_html=True)
+                    # Crear enlace de descarga (lo voy a volver un botoncito)
+                    href = f'<a href="data:application/octet-stream;base64,{pdf_base64}" download="boleta_{nombre_comprador.replace(" ", "")}{i + 1}.pdf">Descargar Boleta {i + 1}</a>'
+                    st.markdown(href, unsafe_allow_html=True)
 
 def dibujar_generar_reporte(gui_controler):
     st.subheader("Generar reporte")

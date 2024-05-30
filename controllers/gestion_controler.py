@@ -88,7 +88,7 @@ class GestionController:
         if evento:
             if evento.estado_preventa:
                 porcentaje = evento.porcentaje_preventa
-            return evento.categorias, porcentaje
+            return evento.categorias, porcentaje, evento.aforo, evento.get_total_tickets_add()
         else:
             return None
 
@@ -116,23 +116,32 @@ class GestionController:
 
     def editar_evento_bar(self, nombre_pasado, fecha_evento_nuevo,
                           hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo,
-                          direccion_nuevo, estado_nuevo, preventa):
+                          direccion_nuevo, estado_nuevo, preventa, aforo_nuevo):
         evento = self.events_bar[nombre_pasado]
-        evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
-                      hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa)
+        if aforo_nuevo < evento.get_total_tickets_add():
+            st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
+        else:
+            evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
+                          hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa, aforo_nuevo)
 
     def editar_evento_teatro(self, nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
-                             ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo):
+                             ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, aforo_nuevo):
         evento = self.events_theater[nombre_pasado]
-        evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
-                      ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo)
+        if aforo_nuevo < evento.get_total_tickets_add():
+            st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
+        else:
+            evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
+                          ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, aforo_nuevo)
 
     def editar_evento_filantropico(self,nombre_pasado, fecha_evento_nuevo,
                           hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo,
-                          direccion_nuevo, estado_nuevo):
+                          direccion_nuevo, estado_nuevo, aforo_nuevo):
         evento = self.events_philanthropic[nombre_pasado]
-        evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
-                      hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo)
+        if aforo_nuevo < evento.get_total_tickets_add():
+            st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
+        else:
+            evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
+                          hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, aforo_nuevo)
 
     def crear_evento_bar(self, nombre_evento, fecha_evento, hora_apertura,
                          hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa, aforo):

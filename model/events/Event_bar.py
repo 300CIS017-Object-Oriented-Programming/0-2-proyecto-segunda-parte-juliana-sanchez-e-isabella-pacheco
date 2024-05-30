@@ -9,7 +9,7 @@ class EventBar(Event):
         self.estado_preventa = True
 
     def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
-               hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa):
+               hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa, aforo_nuevo):
         if fecha_evento_nuevo != self.fecha and (estado_nuevo != "Cancelado" or estado_nuevo != "Cerrado"):
             self.estado = "Aplazado"
         else:
@@ -22,4 +22,5 @@ class EventBar(Event):
         self.ciudad = ciudad_nuevo
         self.direccion = direccion_nuevo
         self.estado_preventa = preventa
+        self.aforo = aforo_nuevo
 

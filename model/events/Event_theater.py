@@ -9,8 +9,8 @@ class EventTheater(Event):
         self.porcentaje_preventa = porcentaje_preventa/100
         self.estado_preventa = True
 
-    def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
-               hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, preventa):
+    def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo,
+               ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, preventa, aforo_nuevo):
         if self.fecha != fecha_evento_nuevo:
             self.estado = "Aplazado"
         else:
@@ -24,3 +24,4 @@ class EventTheater(Event):
         self.direccion = direccion_nuevo
         self.alquiler_price = costo_alquiler_nuevo
         self.estado_preventa = preventa
+        self.aforo = aforo_nuevo

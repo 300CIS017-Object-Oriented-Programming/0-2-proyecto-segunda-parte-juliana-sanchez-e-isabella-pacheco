@@ -68,7 +68,7 @@ class GUIController:
         categoria_elegida = None
         if opcion_seleccionada != "Filantrópico":
             st.subheader("Selecciona la categoría:")
-            categorias, porcentaje = self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada)
+            categorias, porcentaje, aforo, vendidas = self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada)
             nombre_categorias = list(categorias.keys())
             categoria_elegida = st.selectbox("Categoría:", nombre_categorias)
 
@@ -81,6 +81,9 @@ class GUIController:
             st.write(f"Total a pagar: ${total}")
         else:
             st.write("Entrada gratuita")
+        if cantidad_boletas + vendidas > aforo:
+            st.warning("Se están tratando de comprar mas boletas de las disponibles")
+            return None
         return categoria_elegida
 
     def guardar_info_boletas(self, nombre_comprador, telefono, correo, direccion, evento_seleccionado,

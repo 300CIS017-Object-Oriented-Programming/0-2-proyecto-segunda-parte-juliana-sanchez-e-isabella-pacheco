@@ -7,7 +7,7 @@ class EventPhilanthropic(Event):
         self.sponsors = sponsor_list
 
     def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
-               hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo):
+               hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, aforo_nuevo):
         if fecha_evento_nuevo != self.fecha:
             self.estado = "Aplazado"
         else:
@@ -19,4 +19,5 @@ class EventPhilanthropic(Event):
         self.ubicacion = ubicacion_nuevo
         self.ciudad = ciudad_nuevo
         self.direccion = direccion_nuevo
+        self.estado = estado_nuevo
 
