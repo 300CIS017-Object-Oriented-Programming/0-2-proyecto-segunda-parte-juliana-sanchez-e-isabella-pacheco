@@ -88,7 +88,9 @@ class GestionController:
         if evento:
             if evento.estado_preventa:
                 porcentaje = evento.porcentaje_preventa
-            return evento.categorias, porcentaje, evento.aforo, evento.get_total_tickets_add()
+            print(evento.categorias)
+            return (evento.categorias, porcentaje, evento.aforo, evento.get_total_tickets_add(),
+                    evento.total_cortesias, evento.get_cortesias_vendidas())
         else:
             return None
 
@@ -144,10 +146,10 @@ class GestionController:
                           hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, aforo_nuevo)
 
     def crear_evento_bar(self, nombre_evento, fecha_evento, hora_apertura,
-                         hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa, aforo):
+                         hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa, aforo, total_cortesias):
         aux, artista_dict = self.guardar_artistas(artistas, nombre_evento)
         evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                          ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa, aforo)
+                          ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa, aforo, total_cortesias)
         self.letra = "b"
         self.events_bar[nombre_evento] = evento
         st.write(self.events_bar[nombre_evento].nombre)
@@ -174,10 +176,12 @@ class GestionController:
                                 ubicacion, ciudad, direccion, artista_name_list, patrocinadores,aforo))
 
     def crear_evento_teatro(self, nombre_evento, fecha_evento, hora_apertura, hora_show,
-                            ubicacion, ciudad, direccion, categorias, artistas, costo_alquiler, porcentaje_preventa, aforo):
+                            ubicacion, ciudad, direccion, categorias, artistas, costo_alquiler, porcentaje_preventa,
+                            aforo, total_cortesias):
         artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)
         self.events_theater[nombre_evento] = \
             (EventTheater(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                          ubicacion, ciudad, direccion, categorias, artista_name_list, costo_alquiler, porcentaje_preventa, aforo))
+                          ubicacion, ciudad, direccion, categorias, artista_name_list, costo_alquiler,
+                          porcentaje_preventa, aforo, total_cortesias))
 
 

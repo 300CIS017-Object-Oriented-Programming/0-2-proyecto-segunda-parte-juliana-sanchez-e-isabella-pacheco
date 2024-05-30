@@ -146,6 +146,12 @@ def dibujar_crear_evento_bar(gui_controler):
         nombre_categoria = st.text_input(f"Nombre de la categoría {i+1}")
         costo_categoria = st.number_input(f"Costo de la categoría {i+1}", min_value=0.0)
         categorias[nombre_categoria] = costo_categoria
+    categorias["cortesia"] = 0
+    cortesias = st.checkbox("Agregar cortesias", value=True)
+    if cortesias:
+        total_cortesias = st.number_input("Total de cortesias", min_value=1, value=1)
+    else:
+        total_cortesias = 0
 
     num_comediantes = st.number_input("Número de comediantes participantes", min_value=1, value=1)
     comediantes = []
@@ -158,7 +164,7 @@ def dibujar_crear_evento_bar(gui_controler):
     if st.button("Guardar"):
         gui_controler.gestion_controler.crear_evento_bar(nombre_evento, fecha_evento, hora_apertura,
                                                          hora_show, ubicacion, ciudad, direccion,
-                                                         categorias, comediantes, porcentaje_reduccion_preventa, aforo)
+                                                         categorias, comediantes, porcentaje_reduccion_preventa, aforo, total_cortesias)
         st.success("¡Evento guardado exitosamente!")
 
 
@@ -174,13 +180,19 @@ def dibujar_crear_evento_teatro(gui_controler):
     direccion = st.text_input("Dirección")
     porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,
                                                     value=0.0)
-    num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
     aforo = st.number_input("Aforo", min_value=1, value=1)
+    num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
     categorias = {}
     for i in range(num_categorias):
         nombre_categoria = st.text_input(f"Nombre de la categoría {i + 1}")
         costo_categoria = st.number_input(f"Costo de la categoría {i + 1}", min_value=0.0)
         categorias[nombre_categoria] = costo_categoria
+    categorias["cortesia"] = 0
+    cortesias = st.checkbox("Agregar cortesias", value=True)
+    if cortesias:
+        total_cortesias = st.number_input("Total de cortesias", min_value=1, value=1)
+    else:
+        total_cortesias = 0
 
     num_artistas = st.number_input("Número de artistas participantes", min_value=1, value=1)
     artistas = []
@@ -193,7 +205,7 @@ def dibujar_crear_evento_teatro(gui_controler):
     if st.button("Guardar"):
         gui_controler.gestion_controler.crear_evento_teatro(nombre_evento, fecha_evento, hora_apertura,hora_show,
                                                             ubicacion, ciudad, direccion, categorias, artistas,
-                                                            costo_alquiler, porcentaje_reduccion_preventa, aforo)
+                                                            costo_alquiler, porcentaje_reduccion_preventa, aforo, total_cortesias)
         st.success("¡Evento guardado exitosamente!")
 
 def dibujar_comprar_boletas(gui_controler):

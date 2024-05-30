@@ -2,12 +2,13 @@ from model.Event import Event
 
 class EventTheater(Event):
     def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, categorias,
-                 artistas, alquiler, porcentaje_preventa, aforo) -> None:
+                 artistas, alquiler, porcentaje_preventa, aforo, cortesias) -> None:
         super().__init__(nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas, aforo)
         self.alquiler_price = alquiler
         self.categorias = categorias
         self.porcentaje_preventa = porcentaje_preventa/100
         self.estado_preventa = True
+        self.total_cortesias = cortesias
 
     def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo,
                ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, preventa, aforo_nuevo):

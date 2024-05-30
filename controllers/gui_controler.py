@@ -68,10 +68,13 @@ class GUIController:
         categoria_elegida = None
         if opcion_seleccionada != "Filantrópico":
             st.subheader("Selecciona la categoría:")
-            categorias, porcentaje, aforo, vendidas = self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada)
-            nombre_categorias = list(categorias.keys())
-            categoria_elegida = st.selectbox("Categoría:", nombre_categorias)
+            categorias, porcentaje, aforo, vendidas, cortesia_total, cortesias_vendidas = (
+                self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada))
 
+            nombre_categorias = list(categorias.keys())
+            if cortesia_total <= cortesias_vendidas:
+                nombre_categorias.remove("cortesia")
+            categoria_elegida = st.selectbox("Categoría:", nombre_categorias)
             # Obtener el costo de la categoría seleccionada
             costo_categoria = categorias[categoria_elegida]
             total = cantidad_boletas * costo_categoria
@@ -81,8 +84,11 @@ class GUIController:
             st.write(f"Total a pagar: ${total}")
         else:
             st.write("Entrada gratuita")
-        if cantidad_boletas + vendidas > aforo:
+        if categoria_elegida != "cortesia" and cantidad_boletas + vendidas > aforo:
             st.warning("Se están tratando de comprar mas boletas de las disponibles")
+            return None
+        elif categoria_elegida == "cortesia" and cantidad_boletas + cortesias_vendidas > cortesia_total:
+            st.warning("Se están tratando de comprar mas cortesias de las disponibles")
             return None
         return categoria_elegida
 
