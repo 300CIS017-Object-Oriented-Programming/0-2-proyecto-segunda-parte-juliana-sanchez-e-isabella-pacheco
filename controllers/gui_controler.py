@@ -2,7 +2,7 @@ import streamlit as st
 from controllers.gestion_controler import  GestionController
 from view.main_view import (draw_admin_page, dibujar_eventos_creados, dibujar_crear_evento_bar,
                             dibujar_crear_evento_filantropico, dibujar_crear_evento_teatro,
-                            dibujar_comprar_boletas, dibujar_generar_reporte, dibujar_editar_evento)
+                            dibujar_comprar_boletas, dibujar_generar_reporte, dibujar_verificar_asistencia)
 
 
 class GUIController:
@@ -36,6 +36,8 @@ class GUIController:
             dibujar_comprar_boletas(self)
         elif opcion_seleccionada == "Generar reporte":
             dibujar_generar_reporte(self)
+        else:
+            dibujar_verificar_asistencia(self)
 
     def generar_reporte(self, tipo_reporte, nombre, tipo):
         if tipo_reporte == "Reporte de los Artistas":
@@ -92,11 +94,18 @@ class GUIController:
             return None
         return categoria_elegida
 
+    def get_ubicacion(self, nombre_evento, tipo):
+        return self.gestion_controler.get_ubicacion(tipo, nombre_evento)
+
     def guardar_info_boletas(self, nombre_comprador, telefono, correo, direccion, evento_seleccionado,
                             cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo):
         id_boletas = self.gestion_controler.guardar_boletas(nombre_comprador, tipo, evento_seleccionado,
                                                             cantidad_boletas, donde_conocio, metodo_pago, categoria)
         self.gestion_controler.guardar_user_info(nombre_comprador, telefono, correo, direccion, id_boletas)
+
+    def get_info_clientes(self, nombre_evento):
+        info_clientes = self.gestion_controler.get_info_clientes(nombre_evento)
+        return info_clientes
 
     def filtrar_eventos_guardados(self, opcion_seleccionada):
         eventos_filtrados = self.gestion_controler.get_events(opcion_seleccionada)

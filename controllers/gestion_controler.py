@@ -93,6 +93,18 @@ class GestionController:
         else:
             return None
 
+
+    def get_info_clientes(self, nombre_evento):
+        clientes = list(self.users.values())
+        info_clientes = []
+        for cliente in clientes:
+            if cliente.tiene_evento(nombre_evento):
+                dic = {
+                    "nombre": cliente.nombre,
+                    "cantidad": cliente.get_cantidad_boletas(nombre_evento),
+                }
+                info_clientes.append(dic)
+        return info_clientes
     def guardar_boletas(self, nombre_comprador, tipo, evento_seleccionado, cantidad_boletas,
                         donde_conocio, metodo_pago, categoria):
         evento = None
@@ -116,6 +128,15 @@ class GestionController:
         if evento.get_total_tickets_add() == evento.aforo:
             evento.update_status("Cerrado")
         return id_list
+
+    def get_ubicacion(self, tipo, nombre_evento):
+        if tipo == "Bar":
+            evento = self.events_bar[nombre_evento]
+        elif tipo == "Teatro":
+            evento = self.events_theater[nombre_evento]
+        else:
+            evento = self.events_philanthropic[nombre_evento]
+        return evento.ubicacion
 
     def editar_evento_bar(self, nombre_pasado, fecha_evento_nuevo,
                           hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo,

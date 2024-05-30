@@ -1,8 +1,14 @@
 import streamlit as st
-from fpdf import FPDF
-import base64
 from streamlit_option_menu import option_menu
-from settings import LOGO_HTML_CONFIG
+
+from controllers import gui_controler
+from settings import LOGO_HTML_CONFIG, IMAGE_PATH_TICKETS
+import os
+import random
+import string
+import zipfile
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 
 
@@ -11,7 +17,7 @@ def navegation_sidebar(gui_controler):
         opcion_seleccionada = option_menu("Navegación",
                                           ["Ver eventos creados", "Crear evento Bar",
                                            "Crear evento Filantrópico", "Crear evento Teatro",
-                                           "Comprar boletas", "Generar reporte"], orientation="vertical")
+                                           "Comprar boletas", "Generar reporte", "Verificar asistencia"], orientation="vertical")
     gui_controler.sidebar_option_menu(opcion_seleccionada)
 
 
@@ -271,30 +277,68 @@ def dibujar_comprar_boletas(gui_controler):
 
             if st.button("Comprar"):
                 gui_controler.guardar_info_boletas(nombre_comprador, telefono, correo, direccion, evento_seleccionado,
-                                                   cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo_evento)
+                                                  cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo_evento)
+                ubicacion = gui_controler.get_ubicacion(evento_seleccionado, tipo_evento)
+                info_cliente = {
+                    "nombre": nombre_comprador,
+                    "telefono": telefono,
+                    "correo": correo,
+                    "donde_conocio": donde_conocio,
+                    "cantidad_boletas": cantidad_boletas,
+                    "evento": evento_seleccionado,
+                    "metodo_pago": metodo_pago
+                }
+
                 st.success("¡Compra realizada exitosamente!")
 
-                for i in range(cantidad_boletas):
-                    pdf = FPDF()
-                    pdf.add_page()
-                    pdf.set_font("Helvetica", size=12)
-                    pdf.cell(200, 10, txt=f"Boleta {i + 1}", ln=True, align='C')
-                    pdf.cell(200, 10, txt=f"Nombre del comprador: {nombre_comprador}", ln=True)
-                    pdf.cell(200, 10, txt=f"Teléfono: {telefono}", ln=True)
-                    pdf.cell(200, 10, txt=f"Correo electrónico: {correo}", ln=True)
-                    pdf.cell(200, 10, txt=f"Dirección: {direccion}", ln=True)
-                    pdf.cell(200, 10, txt=f"¿Dónde nos conoció?: {donde_conocio}", ln=True)
-                    pdf.cell(200, 10, txt=f"Evento: {evento_seleccionado}", ln=True)
-                    pdf.cell(200, 10, txt=f"Categoría: {categoria}", ln=True)
-                    pdf.cell(200, 10, txt=f"Método de pago: {metodo_pago}", ln=True)
+                generar_pdf_compra(info_cliente, ubicacion)
 
-                    # Guardar el PDF en memoria
-                    pdf_output = pdf.output(dest='S').encode('latin1')
-                    pdf_base64 = base64.b64encode(pdf_output).decode('latin1')
 
-                    # Crear enlace de descarga (lo voy a volver un botoncito)
-                    href = f'<a href="data:application/octet-stream;base64,{pdf_base64}" download="boleta_{nombre_comprador.replace(" ", "")}{i + 1}.pdf">Descargar Boleta {i + 1}</a>'
-                    st.markdown(href, unsafe_allow_html=True)
+def generar_codigo(length=8):
+    """Genera un código alfanumérico único."""
+    return ''.join(
+        random.choices(string.ascii_letters + string.digits, k=length))
+
+
+def generar_pdf_compra(info_cliente, ubicacion):
+    pdf_files = []
+
+    for i in range(info_cliente["cantidad_boletas"]):
+        # Generar un código único para cada PDF
+        codigo = generar_codigo()
+        pdf_path = f"compras/{codigo}.pdf"
+        pdf_files.append(pdf_path)
+
+        # Crear el PDF
+        c = canvas.Canvas(pdf_path, pagesize=letter)
+        image_path = IMAGE_PATH_TICKETS
+        c.drawImage(image_path, 100, 750, width=200, height=50)
+
+        # Escribir los datos de la compra en el PDF
+        c.drawString(100, 730, f"Datos de la Compra #{i + 1}:")
+        c.drawString(100, 710,
+                     f"Nombre del comprador: {info_cliente['nombre']}")
+        c.drawString(100, 690, f"Teléfono: {info_cliente['telefono']}")
+        c.drawString(100, 670, f"Correo electrónico: {info_cliente['correo']}")
+        c.drawString(100, 650,
+                     f"Dónde nos conoció: {info_cliente['donde_conocio']}")
+        c.drawString(100, 630, f"Evento: {info_cliente['evento']}")
+        c.drawString(100, 610, f"Ubicación: {ubicacion}")
+        c.drawString(100, 590, f"Código único: {codigo}")
+
+        # Guardar el PDF
+        c.save()
+
+    with zipfile.ZipFile("compras/comprobantes.zip", "w") as zipf:
+        for pdf_file in pdf_files:
+            zipf.write(pdf_file, os.path.basename(pdf_file))
+
+    st.write("Descarga todos tus comprobantes:")
+    st.download_button(label="Descargar Comprobantes",
+                       data=open("compras/comprobantes.zip", "rb").read(),
+                       file_name="comprobantes.zip",
+                       mime="application/zip")
+
 
 def dibujar_generar_reporte(gui_controler):
     st.subheader("Generar reporte")
@@ -321,3 +365,73 @@ def dibujar_generar_reporte(gui_controler):
             if st.button(f"Generar {tipo_reporte} para {evento_seleccionado}"):
                 gui_controler.generar_reporte(tipo_reporte, evento_seleccionado, tipo_evento)
 
+
+def dibujar_verificar_asistencia(gui_controler):
+    st.subheader("Verificar Asistencia")
+    tipo_evento_seleccionado = st.radio("Selecciona el tipo de evento:",
+                                        ["Filantrópico", "Bar", "Teatro"])
+    nombres_eventos = gui_controler.get_nombres_eventos(tipo_evento_seleccionado)
+    evento_seleccionado = st.selectbox("Selecciona el evento:",
+                                       nombres_eventos, key="nombre_asistencia")
+
+    clientes = gui_controler.get_info_clientes(evento_seleccionado)
+
+    asistentes_por_evento = {}
+
+    if clientes:
+        nombres_clientes = []
+        for cliente in clientes:
+            nombres_clientes.append(cliente["nombre"])
+
+        nombres_clientes.append("Todos")
+        cliente_seleccionado = st.selectbox("Selecciona el cliente:",
+                                            nombres_clientes)
+
+        state_key = f"checkboxes_{evento_seleccionado}_{cliente_seleccionado}"
+        selected_checkboxes = st.session_state.get(state_key, [])
+
+        num_checkboxes_marcados = len(selected_checkboxes)
+        if num_checkboxes_marcados > 0:
+            st.write(
+                f"{cliente_seleccionado} tiene {num_checkboxes_marcados} asistencias ya confirmadas."
+            )
+
+        if cliente_seleccionado != "Todos":
+
+            cliente = next((c for c in clientes
+                            if c["nombre"] == cliente_seleccionado), None)
+            if cliente:
+                st.write(
+                    f"Comprador: {cliente['nombre']} - Evento: {evento_seleccionado}"
+                )
+
+                checkboxes_disponibles = [
+                    i for i in range(1, cliente["cantidad"] + 1)
+                    if i not in selected_checkboxes
+                ]
+                if checkboxes_disponibles:
+                    for i in checkboxes_disponibles:
+                        checkbox_label = f"Boleta {i}"
+
+                        checkbox_state = st.checkbox(checkbox_label,
+                                                     key=f"{state_key}_{i}")
+                        if checkbox_state:
+
+                            asistentes_por_evento[
+                                evento_seleccionado] = asistentes_por_evento.get(
+                                evento_seleccionado, 0) + 1
+
+                            if i not in selected_checkboxes:
+                                selected_checkboxes.append(i)
+                        elif i in selected_checkboxes:
+                            # Si el checkbox está deseleccionado pero estaba seleccionado previamente, eliminarlo de la lista guardada
+                            selected_checkboxes.remove(i)
+        else:
+            st.write(
+                "No se puede mostrar la lista de checkboxes para todos los clientes."
+            )
+
+        # Guardar la lista de checkboxes seleccionados en el estado de la sesión
+        st.session_state[state_key] = selected_checkboxes
+    else:
+        st.write("No hay compradores registrados para este evento.")
