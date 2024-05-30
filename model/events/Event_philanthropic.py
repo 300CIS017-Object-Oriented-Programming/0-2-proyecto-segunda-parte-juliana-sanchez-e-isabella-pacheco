@@ -5,6 +5,7 @@ class EventPhilanthropic(Event):
                  artistas, sponsor_list, aforo):
         super().__init__(nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas, aforo)
         self.sponsors = sponsor_list
+        self.tipo = "filantropico"
 
     def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
                hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, aforo_nuevo):

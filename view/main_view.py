@@ -342,28 +342,20 @@ def generar_pdf_compra(info_cliente, ubicacion):
 
 def dibujar_generar_reporte(gui_controler):
     st.subheader("Generar reporte")
-    tipo_reporte = st.radio("Selecciona el tipo de reporte", ["Reporte de Ventas, Reporte Financiero, Reporte de los Compradores, Reporte de los Artistas"])
-    if tipo_reporte == "Reporte de los Artistas" :
-        st.subheader("Elige el artista")
-        artista_seleccionado = st.selectbox("Artistas", gui_controler.get_artistas())
-        if artista_seleccionado != "":
-            st.button("Generar reporte del artista", on_click=gui_controler.guardar_reporte(tipo_reporte,
-                                                                                            artista_seleccionado, None))
+    tipo_reporte = st.radio("Selecciona el tipo de reporte", ["Reporte de Ventas", "Reporte Financiero", "Reporte de los Compradores", "Reporte de los Artistas"])
+    if tipo_reporte == "Reporte de los Artistas":
+        st.subheader("Elige el evento")
+        tipo_evento = st.selectbox("Tipo de evento", ["Bar", "Teatro"])
+        evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento)
+        if evento_seleccionado != "":
+            st.button("Generar reporte del artista", on_click=gui_controler.guardar_reporte(tipo_reporte, evento_seleccionado))
     elif tipo_reporte == "Reporte de Ventas":
-        st.subheader("Elige el evento")
-        tipo_evento = st.selectbox("Tipo de evento", ["Bar, Teatro"])
-        evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento)
-        if evento_seleccionado != "":
-            if st.button(f"Generar {tipo_reporte} para {evento_seleccionado}"):
-                gui_controler.generar_reporte(tipo_reporte, evento_seleccionado, tipo_evento)
+        gui_controler.generar_reporte(tipo_reporte,None)
 
+    elif tipo_reporte == "Reporte de los Compradores":
+        gui_controler.generar_reporte(tipo_reporte,None)
     else:
-        st.subheader("Elige el evento")
-        tipo_evento = st.selectbox("Tipo de evento", ["Bar, Filantropico, Teatro"])
-        evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento)
-        if evento_seleccionado != "":
-            if st.button(f"Generar {tipo_reporte} para {evento_seleccionado}"):
-                gui_controler.generar_reporte(tipo_reporte, evento_seleccionado, tipo_evento)
+        gui_controler.generar_reporte(tipo_reporte,None)
 
 
 def dibujar_verificar_asistencia(gui_controler):

@@ -33,7 +33,7 @@ class GestionController:
             info_evento[evento] = [evento.get_info()]
         generar_reporte_artistas(nombre_artista, info_evento)
 
-    def generar_reporte_ventas(self, nombre_evento, tipo_evento):
+    def generar_reporte_ventas(self):
         evento = None
         if tipo_evento == 'bar':
             evento = self.events_bar[nombre_evento]
@@ -42,7 +42,7 @@ class GestionController:
         vendidas, ingresos_preventa, ingresos_regular = evento.get_boleteria_info()
         generar_reporte_ventas(vendidas, ingresos_preventa, ingresos_regular, nombre_evento)
 
-    def generar_reporte_financiero(self, nombre_evento, tipo_evento):
+    def generar_reporte_financiero(self):
         if tipo_evento == 'bar':
             evento = self.events_bar[nombre_evento]
             ingresos_metodo_pago, ingresos_categorias, pago_artistas = evento.get_financiero_info()
@@ -56,13 +56,18 @@ class GestionController:
             patrocinadores = evento.get_financiero_info()
             generar_reporte_financiero_filantropico(patrocinadores, nombre_evento)
 
-    def generar_reporte_compradores(self, nombre_evento, tipo_evento):
+    def generar_reporte_compradores(self):
         compradores_list = []
-        for comprador in self.users:
-            id_boletas_list = comprador.id_boletas
-            if nombre_evento in id_boletas_list.keys():
-                compradores_list.append(comprador)
-        generar_reporte_compradores(compradores_list, nombre_evento)
+        for comprador in list(self.users.values()):
+            info_cliente = {
+                "eventos": list(comprador.id_boletas.keys()),
+                "nombre": comprador.nombre,
+                "telefono": comprador.telefono,
+                "correo": comprador.correo,
+                "direccion": comprador.direccion,
+            }
+            compradores_list.append(info_cliente)
+        generar_reporte_compradores(compradores_list)
 
     def guardar_artistas(self, artistas, nombre_evento):
         artista_name_list = []

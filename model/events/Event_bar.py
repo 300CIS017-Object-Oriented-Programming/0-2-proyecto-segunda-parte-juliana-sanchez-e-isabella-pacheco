@@ -8,6 +8,7 @@ class EventBar(Event):
         self.porcentaje_preventa = (porcentaje_preventa/100)
         self.estado_preventa = True
         self.total_cortesias = cortesias
+        self.tipo = "Bar"
 
     def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
                hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa, aforo_nuevo):

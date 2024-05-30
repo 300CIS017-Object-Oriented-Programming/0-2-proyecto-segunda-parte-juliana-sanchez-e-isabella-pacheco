@@ -23,6 +23,9 @@ class GUIController:
         artistas_names = self.gestion_controler.artist.keys()
         return list(artistas_names)
 
+    def guardar_reporte(self, tipo, artista):
+        f = 6
+
     def sidebar_option_menu(self, opcion_seleccionada):
         if opcion_seleccionada == "Ver eventos creados":
             dibujar_eventos_creados(self)
@@ -39,15 +42,15 @@ class GUIController:
         else:
             dibujar_verificar_asistencia(self)
 
-    def generar_reporte(self, tipo_reporte, nombre, tipo):
+    def generar_reporte(self, tipo_reporte, nombre):
         if tipo_reporte == "Reporte de los Artistas":
             self.gestion_controler.generar_reporte_artistas(nombre)
         elif tipo_reporte == "Reporte de Ventas":
-            self.gestion_controler.generar_reporte_ventas(nombre, tipo)
+            self.gestion_controler.generar_reporte_ventas()
         elif tipo_reporte == "Reporte Financiero":
-            self.gestion_controler.generar_reporte_financiero(nombre, tipo)
+            self.gestion_controler.generar_reporte_financiero()
         else:
-            self.gestion_controler.generar_reporte_compradores(nombre, tipo)
+            self.gestion_controler.generar_reporte_compradores()
 
     def get_nombres_eventos(self, opcion_seleccionada):
         if opcion_seleccionada == "Bar":
