@@ -1,8 +1,8 @@
 from model.Event import Event
 
 class EventBar(Event):
-    def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion,
-                 artistas, categorias, porcentaje_preventa, aforo, cortesias) -> None:
+    def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, categorias, artistas,
+                 porcentaje_preventa, aforo, cortesias) -> None:
         super().__init__(nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas, aforo)
         self.categorias = categorias
         self.porcentaje_preventa = (porcentaje_preventa/100)

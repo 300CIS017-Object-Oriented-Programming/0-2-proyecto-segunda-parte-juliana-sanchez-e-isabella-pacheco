@@ -1,4 +1,6 @@
 import streamlit as st
+from fpdf import FPDF
+import base64
 from streamlit_option_menu import option_menu
 from settings import LOGO_HTML_CONFIG
 
@@ -136,35 +138,54 @@ def dibujar_crear_evento_bar(gui_controler):
     ubicacion = st.text_input("Ubicación del evento")
     ciudad = st.text_input("Ciudad del evento")
     direccion = st.text_input("Dirección")
-    porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,
-                                                    value=0.0)
-    num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
+    porcentaje_reduccion_preventa = st.number_input(
+        "Porcentaje de reducción durante la preventa",
+        min_value=0.0,
+        value=0.0)
+    num_categorias = st.number_input("Número de categorías",
+                                     min_value=1,
+                                     value=1)
     aforo = st.number_input("Aforo", min_value=1, value=1)
 
     categorias = {}
     for i in range(num_categorias):
         nombre_categoria = st.text_input(f"Nombre de la categoría {i+1}")
-        costo_categoria = st.number_input(f"Costo de la categoría {i+1}", min_value=0.0)
+        costo_categoria = st.number_input(f"Costo de la categoría {i+1}",
+                                          min_value=0.0)
         categorias[nombre_categoria] = costo_categoria
-    categorias["cortesia"] = 0
-    cortesias = st.checkbox("Agregar cortesias", value=True)
+
+    cortesias = st.checkbox("Agregar cortesías", value=True)
     if cortesias:
-        total_cortesias = st.number_input("Total de cortesias", min_value=1, value=1)
+        total_cortesias = st.number_input("Total de cortesías",
+                                          min_value=1,
+                                          value=1)
+        categorias["cortesia"] = 0
     else:
         total_cortesias = 0
 
-    num_comediantes = st.number_input("Número de comediantes participantes", min_value=1, value=1)
+    num_comediantes = st.number_input("Número de comediantes participantes",
+                                      min_value=1,
+                                      value=1)
     comediantes = []
     for i in range(num_comediantes):
         nombre_comediante = st.text_input(f"Nombre"
                                           f" del comediante {i+1}")
-        tarifa_comediante = st.number_input(f"Tarifa del comediante {i+1}", min_value=0.0)
-        comediantes.append({"nombre": nombre_comediante, "tarifa": tarifa_comediante})
+        tarifa_comediante = st.number_input(f"Tarifa del comediante {i+1}",
+                                            min_value=0.0)
+        comediantes.append({
+            "nombre": nombre_comediante,
+            "tarifa": tarifa_comediante
+        })
 
-    if st.button("Guardar"):
-        gui_controler.gestion_controler.crear_evento_bar(nombre_evento, fecha_evento, hora_apertura,
-                                                         hora_show, ubicacion, ciudad, direccion,
-                                                         categorias, comediantes, porcentaje_reduccion_preventa, aforo, total_cortesias)
+    if hora_apertura >= hora_show:
+        st.warning("La hora de apertura debe ser anterior a la hora del show")
+    elif total_cortesias > aforo:
+        st.warning("El total de cortesías debe ser menor o igual al aforo")
+    elif st.button("Guardar"):
+        gui_controler.gestion_controler.crear_evento_bar(
+            nombre_evento, fecha_evento, hora_apertura, hora_show, ubicacion,
+            ciudad, direccion, categorias, comediantes,
+            porcentaje_reduccion_preventa, aforo, total_cortesias)
         st.success("¡Evento guardado exitosamente!")
 
 
@@ -178,34 +199,51 @@ def dibujar_crear_evento_teatro(gui_controler):
     ubicacion = st.text_input("Ubicación del evento")
     ciudad = st.text_input("Ciudad del evento")
     direccion = st.text_input("Dirección")
-    porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,
-                                                    value=0.0)
+    porcentaje_reduccion_preventa = st.number_input(
+        "Porcentaje de reducción durante la preventa",
+        min_value=0.0,
+        value=0.0)
+    num_categorias = st.number_input("Número de categorías",
+                                     min_value=1,
+                                     value=1)
     aforo = st.number_input("Aforo", min_value=1, value=1)
-    num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
     categorias = {}
     for i in range(num_categorias):
         nombre_categoria = st.text_input(f"Nombre de la categoría {i + 1}")
-        costo_categoria = st.number_input(f"Costo de la categoría {i + 1}", min_value=0.0)
+        costo_categoria = st.number_input(f"Costo de la categoría {i + 1}",
+                                          min_value=0.0)
         categorias[nombre_categoria] = costo_categoria
-    categorias["cortesia"] = 0
-    cortesias = st.checkbox("Agregar cortesias", value=True)
+
+    cortesias = st.checkbox("Agregar cortesías", value=True)
     if cortesias:
-        total_cortesias = st.number_input("Total de cortesias", min_value=1, value=1)
+        total_cortesias = st.number_input("Total de cortesías",
+                                          min_value=1,
+                                          value=1)
+        categorias["cortesia"] = 0
     else:
         total_cortesias = 0
 
-    num_artistas = st.number_input("Número de artistas participantes", min_value=1, value=1)
+    num_artistas = st.number_input("Número de artistas participantes",
+                                   min_value=1,
+                                   value=1)
     artistas = []
     for i in range(num_artistas):
         nombre_artista = st.text_input(f"Nombre del artista {i+1}")
         artistas.append({"nombre": nombre_artista, "tarifa": 0})
 
-    costo_alquiler = st.number_input("Costo de alquiler", min_value=0.0)  # Agregar campo para el costo de alquiler
+    costo_alquiler = st.number_input(
+        "Costo de alquiler",
+        min_value=0.0)  # Agregar campo para el costo de alquiler
 
-    if st.button("Guardar"):
-        gui_controler.gestion_controler.crear_evento_teatro(nombre_evento, fecha_evento, hora_apertura,hora_show,
-                                                            ubicacion, ciudad, direccion, categorias, artistas,
-                                                            costo_alquiler, porcentaje_reduccion_preventa, aforo, total_cortesias)
+    if hora_apertura >= hora_show:
+        st.warning("La hora de apertura debe ser anterior a la hora del show")
+    elif total_cortesias > aforo:
+        st.warning("El total de cortesías debe ser menor o igual al aforo")
+    elif st.button("Guardar"):
+        gui_controler.gestion_controler.crear_evento_teatro(
+            nombre_evento, fecha_evento, hora_apertura, hora_show, ubicacion,
+            ciudad, direccion, categorias, artistas, costo_alquiler,
+            porcentaje_reduccion_preventa, aforo, total_cortesias)
         st.success("¡Evento guardado exitosamente!")
 
 def dibujar_comprar_boletas(gui_controler):

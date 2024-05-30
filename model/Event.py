@@ -22,4 +22,7 @@ class Event:
     def get_cortesias_vendidas(self):
         return  self.boleteria.courtesies_sold
 
+    def update_status(self, estado):
+        self.estado = estado
+
 

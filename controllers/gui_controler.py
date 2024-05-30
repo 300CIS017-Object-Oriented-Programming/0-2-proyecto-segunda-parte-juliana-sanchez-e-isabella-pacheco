@@ -109,8 +109,9 @@ class GUIController:
                 st.write("Estado:", evento.estado)
                 st.write("Aforo:", evento.aforo)
                 st.write("Boletas vendidas:", evento.get_total_tickets_add())
+                st.write("Cortesias Disponibles:", evento.total_cortesias - evento.get_get_cortesias_vendidas())
                 # Verificar si el estado del evento es "realizado"
-                if evento.estado != "Realizado":
+                if evento.estado != "Realizado" and evento.estado != "Cancelado":
                     list_names.append(evento.nombre)
                     # Mostrar botón de editar
 

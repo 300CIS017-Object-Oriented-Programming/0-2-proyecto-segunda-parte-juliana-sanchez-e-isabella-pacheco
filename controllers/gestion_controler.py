@@ -88,7 +88,6 @@ class GestionController:
         if evento:
             if evento.estado_preventa:
                 porcentaje = evento.porcentaje_preventa
-            print(evento.categorias)
             return (evento.categorias, porcentaje, evento.aforo, evento.get_total_tickets_add(),
                     evento.total_cortesias, evento.get_cortesias_vendidas())
         else:
@@ -114,6 +113,8 @@ class GestionController:
             id_list[evento_seleccionado].append(id_initial + i)
             evento.add_boleta(nombre_comprador, metodo_pago, categoria,
                               fase, precio, donde_conocio, id_initial+i, evento_seleccionado)
+        if evento.get_total_tickets_add() == evento.aforo:
+            evento.update_status("Cerrado")
         return id_list
 
     def editar_evento_bar(self, nombre_pasado, fecha_evento_nuevo,
@@ -122,6 +123,8 @@ class GestionController:
         evento = self.events_bar[nombre_pasado]
         if aforo_nuevo < evento.get_total_tickets_add():
             st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
+        elif evento.estado_preventa() > 0 and estado_nuevo == "Cancelado":
+            st.warning("No se puede cancelar un evento con boleteria vendida")
         else:
             evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
                           hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa, aforo_nuevo)
@@ -131,6 +134,8 @@ class GestionController:
         evento = self.events_theater[nombre_pasado]
         if aforo_nuevo < evento.get_total_tickets_add():
             st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
+        elif evento.estado_preventa() > 0 and estado_nuevo == "Cancelado":
+            st.warning("No se puede cancelar un evento con boleteria vendida")
         else:
             evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
                           ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, aforo_nuevo)
@@ -141,6 +146,8 @@ class GestionController:
         evento = self.events_philanthropic[nombre_pasado]
         if aforo_nuevo < evento.get_total_tickets_add():
             st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
+        elif evento.estado_preventa() > 0 and estado_nuevo == "Cancelado":
+            st.warning("No se puede cancelar un evento con boleteria vendida")
         else:
             evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
                           hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, aforo_nuevo)
@@ -150,9 +157,7 @@ class GestionController:
         aux, artista_dict = self.guardar_artistas(artistas, nombre_evento)
         evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
                           ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa, aforo, total_cortesias)
-        self.letra = "b"
         self.events_bar[nombre_evento] = evento
-        st.write(self.events_bar[nombre_evento].nombre)
 
     def get_events(self, tipo):
         if tipo == "Bar":
