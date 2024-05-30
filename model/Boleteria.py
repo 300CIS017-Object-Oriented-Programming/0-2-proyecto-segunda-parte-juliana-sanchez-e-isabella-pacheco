@@ -17,7 +17,9 @@ class Boleteria:
     def add_ticket(self, nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket, nombre_evento):
         self.tickets[id_ticket] = (Boleta(nombre_comprador, metodo_pago, categoria, fase, precio,
                                           donde_conocio, nombre_evento))
-
-        self.tickets_sold += 1
+        if categoria == "cortesia":
+            self.courtesies_sold += 1
+        else:
+            self.tickets_sold += 1
 
 
