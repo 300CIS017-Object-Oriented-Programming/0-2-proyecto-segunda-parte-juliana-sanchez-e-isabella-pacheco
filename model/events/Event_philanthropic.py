@@ -2,8 +2,8 @@ from model.Event import Event
 
 class EventPhilanthropic(Event):
     def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion,
-                 artistas, sponsor_list):
-        super().__init__(nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas)
+                 artistas, sponsor_list, aforo):
+        super().__init__(nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas, aforo)
         self.sponsors = sponsor_list
 
     def update(self, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,

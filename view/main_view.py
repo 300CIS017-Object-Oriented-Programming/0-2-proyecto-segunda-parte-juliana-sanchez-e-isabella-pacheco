@@ -24,63 +24,76 @@ def draw_admin_page(gui_controler):
 def dibujar_eventos_creados(gui_controler):
     st.subheader("Eventos Creados")
 
-    # Crear un menú interno para filtrar los eventos por tipo
-    tipo_evento_seleccionado = st.radio("Selecciona el tipo de evento:", ["Filantrópico", "Bar", "Teatro"])
+    col1, col2 = st.columns(2)
 
-    # Filtrar los eventos según el tipo seleccionado
-    gui_controler.filtrar_eventos_guardados(tipo_evento_seleccionado)
+    with col1:
+        tipo_evento_seleccionado = st.radio("Selecciona el tipo de evento:",
+                                        ["Filantrópico", "Bar", "Teatro"])
+        list_nombres = gui_controler.filtrar_eventos_guardados(tipo_evento_seleccionado)
+
+    with col2:
+        # Selectbox con los nombres obtenidos de list_nombres
+        nombre = st.selectbox("Escoge el evento a Editar", list_nombres)
+        event_info = gui_controler.get_event_info(tipo_evento_seleccionado, nombre)
+        if event_info is not None:
+            dibujar_editar_evento(gui_controler, event_info,
+                                  tipo_evento_seleccionado)
+        else:
+            st.warning(
+                "No se encontró información para el evento seleccionado. Por favor, elige otro evento :("
+            )
+
 
 
 def dibujar_editar_evento(gui_controler, evento, tipo):
-    submit_button = False
-    while not submit_button:
-        nombre = evento["nombre"]
-        st.subheader(f"Editar Evento {nombre}")
-        with st.form(key="editar_evento_form"):
+    nombre = evento["nombre"]
+    st.subheader(f"Editar Evento {nombre}")
 
-            # Campos de entrada para editar la información del evento
+    # Campos de entrada para editar la información del evento
 
-            nombre_evento_input = st.text_input("Nombre del evento", value=evento["nombre"], key="nombre_evento")
+    fecha_evento_input = st.date_input("Fecha del evento", value=evento["fecha"], key="fecha_evento")
 
-            fecha_evento_input = st.date_input("Fecha del evento", value=evento["fecha"], key="fecha_evento")
+    hora_apertura_input = st.time_input("Hora de apertura", value=evento["hora_apertura"], key="hora_apertura_evento")
 
-            hora_apertura_input = st.time_input("Hora de apertura", value=evento["hora_apertura"], key="hora_apertura_evento")
+    hora_show_input = st.time_input("Hora del show", value=evento["hora_show"], key="hora_show_evento")
 
-            hora_show_input = st.time_input("Hora del show", value=evento["hora_show"], key="hora_show_evento")
+    ubicacion_input = st.text_input("Ubicación del evento", value=evento["ubicacion"], key="ubicacion_evento")
 
-            ubicacion_input = st.text_input("Ubicación del evento", value=evento["ubicacion"], key="ubicacion_evento")
+    ciudad_input = st.text_input("Ciudad del evento", value=evento["ciudad"], key="ciudad_evento")
 
-            ciudad_input = st.text_input("Ciudad del evento", value=evento["ciudad"], key="ciudad_evento")
+    direccion_input = st.text_input("Dirección", value=evento["direccion"], key="direccion_evento")
 
-            direccion_input = st.text_input("Dirección", value=evento["direccion"], key="direccion_evento")
+    aforo_input = st.number_input()
 
-            estado_input = st.selectbox("Estado del evento", ["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"],
-                                  index=["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"].index(
-                                      evento["estado"].capitalize()), key="estado_evento")
+    estado_input = st.selectbox("Estado del evento", ["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"],
+                          index=["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"].index(
+                              evento["estado"].capitalize()), key="estado_evento")
+    preventa_estado_input = st.checkbox("Preventa", value=True)
 
-            # Solo permitir editar el costo del alquiler para eventos de tipo "Teatro"
-            if tipo == "Teatro":
-                costo_alquiler_input = st.number_input("Costo alquiler", value=float(evento["alquiler"]), min_value=0.0)
-                evento["alquiler"] = costo_alquiler_input
+    # Solo permitir editar el costo del alquiler para eventos de tipo "Teatro"
+    if tipo == "Teatro":
+        costo_alquiler_input = st.number_input("Costo alquiler", value=float(evento["alquiler"]), min_value=0.0)
+        evento["alquiler"] = costo_alquiler_input
 
-            # Guardar los cambios si se hace clic en el botón
-            submit_button = st.form_submit_button(label="Guardar cambios")
-            if submit_button:
-                if tipo == "Teatro":
-                    gui_controler.gestion_controler.editar_evento_teatro(evento["nombre"], nombre_evento_input, fecha_evento_input,
-                                                       hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                                       direccion_input, estado_input, costo_alquiler_input)
-                elif tipo == "Bar":
-                    gui_controler.gestion_controler.editar_evento_bar(evento["nombre"], nombre_evento_input, fecha_evento_input,
-                                                    hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                                    direccion_input, estado_input)
-                    st.write("Bar guardado")
-                else:
-                    gui_controler.gestion_controler.editar_evento_filantropico(evento["nombre"], nombre_evento_input, fecha_evento_input,
-                                                             hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
-                                                             direccion_input, estado_input)
+    # Guardar los cambios si se hace clic en el botón
+    submit_button = st.button(label="Guardar cambios")
+    if submit_button:
+        if tipo == "Teatro":
+            gui_controler.gestion_controler.editar_evento_teatro(nombre, fecha_evento_input,
+                                               hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
+                                               direccion_input, estado_input, costo_alquiler_input, preventa_estado_input)
+        elif tipo == "Bar":
+            gui_controler.gestion_controler.editar_evento_bar(nombre, fecha_evento_input,
+                                            hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
+                                            direccion_input, estado_input, preventa_estado_input)
+            st.write("Bar guardado")
+        else:
+            gui_controler.gestion_controler.editar_evento_filantropico(nombre, fecha_evento_input,
+                                                     hora_apertura_input, hora_show_input, ubicacion_input, ciudad_input,
+                                                     direccion_input, estado_input)
 
-                st.success("¡Evento actualizado exitosamente!")
+        st.success("¡Evento actualizado exitosamente!")
+
 
 
 def dibujar_crear_evento_filantropico(gui_controler):
@@ -94,7 +107,7 @@ def dibujar_crear_evento_filantropico(gui_controler):
     ciudad = st.text_input("Ciudad del evento")
     direccion = st.text_input("Dirección")
     num_patrocinadores = st.number_input("Número de patrocinadores", min_value=1, value=1)
-    
+    aforo = st.number_input("Aforo", min_value=1, value=1)
     patrocinadores = []
     for i in range(num_patrocinadores):
         nombre_patrocinador = st.text_input(f"Nombre del patrocinador {i+1}")
@@ -110,7 +123,7 @@ def dibujar_crear_evento_filantropico(gui_controler):
     if st.button("Guardar"):
         gui_controler.gestion_controler.crear_evento_filantropico(nombre_evento, fecha_evento, hora_apertura,
                                                                   hora_show, ubicacion, ciudad, direccion,
-                                                                  patrocinadores, artistas)
+                                                                  patrocinadores, artistas,aforo)
         st.success("¡Evento guardado exitosamente!")
 
 def dibujar_crear_evento_bar(gui_controler):
@@ -126,7 +139,8 @@ def dibujar_crear_evento_bar(gui_controler):
     porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,
                                                     value=0.0)
     num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
-    
+    aforo = st.number_input("Aforo", min_value=1, value=1)
+
     categorias = {}
     for i in range(num_categorias):
         nombre_categoria = st.text_input(f"Nombre de la categoría {i+1}")
@@ -144,7 +158,7 @@ def dibujar_crear_evento_bar(gui_controler):
     if st.button("Guardar"):
         gui_controler.gestion_controler.crear_evento_bar(nombre_evento, fecha_evento, hora_apertura,
                                                          hora_show, ubicacion, ciudad, direccion,
-                                                         categorias, comediantes, porcentaje_reduccion_preventa)
+                                                         categorias, comediantes, porcentaje_reduccion_preventa, aforo)
         st.success("¡Evento guardado exitosamente!")
 
 
@@ -161,11 +175,11 @@ def dibujar_crear_evento_teatro(gui_controler):
     porcentaje_reduccion_preventa = st.number_input("Porcentaje de reduccion durante la preventa", min_value=0.0,
                                                     value=0.0)
     num_categorias = st.number_input("Número de categorías", min_value=1, value=1)
-
+    aforo = st.number_input("Aforo", min_value=1, value=1)
     categorias = {}
     for i in range(num_categorias):
-        nombre_categoria = st.text_input(f"Nombre de la categoría {i+1}")
-        costo_categoria = st.number_input(f"Costo de la categoría {i+1}", min_value=0.0)
+        nombre_categoria = st.text_input(f"Nombre de la categoría {i + 1}")
+        costo_categoria = st.number_input(f"Costo de la categoría {i + 1}", min_value=0.0)
         categorias[nombre_categoria] = costo_categoria
 
     num_artistas = st.number_input("Número de artistas participantes", min_value=1, value=1)
@@ -177,9 +191,9 @@ def dibujar_crear_evento_teatro(gui_controler):
     costo_alquiler = st.number_input("Costo de alquiler", min_value=0.0)  # Agregar campo para el costo de alquiler
 
     if st.button("Guardar"):
-        gui_controler.gestion_controler.crear_evento_teatro(nombre_evento, fecha_evento, hora_apertura,
-                                                            hora_show, ubicacion, ciudad, direccion,
-                                                            categorias, artistas, costo_alquiler, porcentaje_reduccion_preventa)
+        gui_controler.gestion_controler.crear_evento_teatro(nombre_evento, fecha_evento, hora_apertura,hora_show,
+                                                            ubicacion, ciudad, direccion, categorias, artistas,
+                                                            costo_alquiler, porcentaje_reduccion_preventa, aforo)
         st.success("¡Evento guardado exitosamente!")
 
 def dibujar_comprar_boletas(gui_controler):

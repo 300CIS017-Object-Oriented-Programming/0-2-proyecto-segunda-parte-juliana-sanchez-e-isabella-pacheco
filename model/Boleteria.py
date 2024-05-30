@@ -11,6 +11,13 @@ class Boleteria:
         if id in self.tickets.keys():
             return True
 
-    def add_ticket(self, nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket):
-        self.tickets[id_ticket] = (Boleta(nombre_comprador, metodo_pago, categoria,fase, precio, donde_conocio))
+    def get_total_tickets_add(self):
+        return self.courtesies_sold + self.tickets_sold
+
+    def add_ticket(self, nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket, nombre_evento):
+        self.tickets[id_ticket] = (Boleta(nombre_comprador, metodo_pago, categoria, fase, precio,
+                                          donde_conocio, nombre_evento))
+
+        self.tickets_sold += 1
+
 

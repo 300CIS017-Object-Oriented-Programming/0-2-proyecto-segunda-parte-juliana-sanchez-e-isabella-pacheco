@@ -1,6 +1,6 @@
 from model.Boleteria import Boleteria
 class Event:
-    def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas):
+    def __init__(self, nombre, fecha, hora_apertura, hora_show, ubicacion, ciudad, direccion, artistas, aforo_):
         self.nombre = nombre
         self.fecha = fecha
         self.hora_apertura = hora_apertura
@@ -10,10 +10,14 @@ class Event:
         self.direccion = direccion
         self.estado = "Por realizar"
         self.artistas = artistas
-        self.boleteria = Boleteria
+        self.boleteria = Boleteria()
+        self.aforo = aforo_
 
-    def add_boleta(self, nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket):
-        self.boleteria.add_ticket(nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket)
+    def add_boleta(self, nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket, nombre_evento):
+        self.boleteria.add_ticket(nombre_comprador, metodo_pago, categoria, fase, precio, donde_conocio, id_ticket, nombre_evento)
+
+    def get_total_tickets_add(self):
+        return self.boleteria.get_total_tickets_add()
 
     def actualizar(self, nombre=None, fecha=None, hora_apertura=None, hora_show=None, ubicacion=None, ciudad=None,
                    direccion=None, estado=None, categoria=None, artistas=None, costo_alquiler=None, tipo=None):

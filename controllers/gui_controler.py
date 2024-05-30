@@ -66,15 +66,16 @@ class GUIController:
 
     def comprar_categoria(self, nombre_evento, opcion_seleccionada, cantidad_boletas):
         categoria_elegida = None
-        if opcion_seleccionada != "Filantropico":
+        if opcion_seleccionada != "Filantrópico":
             st.subheader("Selecciona la categoría:")
-            categorias,porcentaje = self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada)
-            nombre_categorias = [categoria["nombre"] for categoria in categorias]
+            categorias, porcentaje = self.gestion_controler.mostrar_categorias(nombre_evento, opcion_seleccionada)
+            nombre_categorias = list(categorias.keys())
             categoria_elegida = st.selectbox("Categoría:", nombre_categorias)
 
             # Obtener el costo de la categoría seleccionada
-            costo_categoria = next((c["costo"] for c in categorias if c["nombre"] == categoria_elegida), 0)
-            total = cantidad_boletas * costo_categoria * porcentaje
+            costo_categoria = categorias[categoria_elegida]
+            total = cantidad_boletas * costo_categoria
+            total -= total*porcentaje
             if porcentaje < 1:
                 st.write(f"Se le está aplicando un {porcentaje*100}% de descuento por estar comprando en preventa")
             st.write(f"Total a pagar: ${total}")
@@ -82,7 +83,7 @@ class GUIController:
             st.write("Entrada gratuita")
         return categoria_elegida
 
-    def guardar_info_boleta(self, nombre_comprador, telefono, correo, direccion, evento_seleccionado,
+    def guardar_info_boletas(self, nombre_comprador, telefono, correo, direccion, evento_seleccionado,
                             cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo):
         id_boletas = self.gestion_controler.guardar_boletas(nombre_comprador, tipo, evento_seleccionado,
                                                             cantidad_boletas, donde_conocio, metodo_pago, categoria)
@@ -90,34 +91,45 @@ class GUIController:
 
     def filtrar_eventos_guardados(self, opcion_seleccionada):
         eventos_filtrados = self.gestion_controler.get_events(opcion_seleccionada)
+        list_names = []
         if eventos_filtrados:
             for evento in eventos_filtrados.values():
-                alquiler = 0
                 st.write("Nombre:", evento.nombre)
                 st.write("Ubicación:", evento.ubicacion)
                 st.write("Fecha:", evento.fecha)
                 st.write("Estado:", evento.estado)
-                if opcion_seleccionada == "teatro":
-                    alquiler = evento.alquiler
+                st.write("Aforo:", evento.aforo)
+                st.write("Boletas vendidas:", evento.get_total_tickets_add())
                 # Verificar si el estado del evento es "realizado"
                 if evento.estado != "Realizado":
+                    list_names.append(evento.nombre)
                     # Mostrar botón de editar
-                    if st.button(f"Editar {evento.nombre}"):
-                        evento_info = {
-                            "nombre": evento.nombre,
-                            "ubicacion": evento.ubicacion,
-                            "fecha": evento.fecha,
-                            "estado": evento.estado,
-                            "hora_apertura": evento.hora_apertura,
-                            "hora_show": evento.hora_show,
-                            "ciudad": evento.ciudad,
-                            "direccion": evento.direccion,
-                            "alquiler": alquiler,
-                                        }
-                        dibujar_editar_evento(self, evento_info, opcion_seleccionada)
+
                 else:
                     st.write("El evento ya está realizado y no se puede editar.")
                 st.write("---")
         else:
             st.write("No hay eventos")
+        return list_names
 
+    def get_event_info(self, tipo, nombre):
+        eventos = self.gestion_controler.get_events(tipo)
+        event_info = None
+        if eventos:
+            evento = eventos[nombre]
+            alquiler = 0
+            if tipo == "teatro":
+                alquiler = evento.alquiler
+            event_info = {
+                "nombre": evento.nombre,
+                "ubicacion": evento.ubicacion,
+                "fecha": evento.fecha,
+                "estado": evento.estado,
+                "hora_apertura": evento.hora_apertura,
+                "hora_show": evento.hora_show,
+                "alquiler": alquiler,
+                "ciudad": evento.ciudad,
+                "direccion": evento.direccion,
+                "aforo": evento.aforo
+            }
+        return event_info

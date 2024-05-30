@@ -79,64 +79,66 @@ class GestionController:
                 self.artist[artista["nombre"]] = (Artist(artista["nombre"], nombre_evento))
         return artista_name_list, artista_dict
 
-    def mostrar_categorias(self, tipo, nombre_evento):
-        evento = None
+    def mostrar_categorias(self, nombre_evento, tipo):
         if tipo == "Bar":
             evento = self.events_bar[nombre_evento]
-        elif tipo == "Teatro":
+        else:
             evento = self.events_theater[nombre_evento]
         porcentaje = 1
-        if evento.estado_preventa:
-            porcentaje = evento.porcentaje_preventa
-
-        return evento.categorias, porcentaje
+        if evento:
+            if evento.estado_preventa:
+                porcentaje = evento.porcentaje_preventa
+            return evento.categorias, porcentaje
+        else:
+            return None
 
     def guardar_boletas(self, nombre_comprador, tipo, evento_seleccionado, cantidad_boletas,
                         donde_conocio, metodo_pago, categoria):
         evento = None
         id_list = {}
+        id_list[evento_seleccionado] = []
         if tipo == "Bar":
             evento = self.events_bar[evento_seleccionado]
         elif tipo == "Teatro":
             evento = self.events_theater[evento_seleccionado]
-        precio = evento.categoria[categoria]
+        precio = evento.categorias[categoria]
         if evento.estado_preventa:
             fase = "Preventa"
-            precio *= evento.porcentaje_preventa
+            precio -= precio*evento.porcentaje_preventa
         else:
             fase = "Regular"
-        id_initial = len(evento.boleteria)
+        id_initial = evento.get_total_tickets_add()
         for i in range(cantidad_boletas):
             id_list[evento_seleccionado].append(id_initial + i)
             evento.add_boleta(nombre_comprador, metodo_pago, categoria,
-                              fase, precio, donde_conocio, id_initial+i)
+                              fase, precio, donde_conocio, id_initial+i, evento_seleccionado)
         return id_list
 
-    def editar_evento_bar(self, nombre_pasado, nombre_nuevo, fecha_evento_nuevo,
+    def editar_evento_bar(self, nombre_pasado, fecha_evento_nuevo,
                           hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo,
-                          direccion_nuevo, estado_nuevo):
+                          direccion_nuevo, estado_nuevo, preventa):
         evento = self.events_bar[nombre_pasado]
-        evento.update(nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
-                      hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo)
+        evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
+                      hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa)
 
-    def editar_evento_teatro(self, nombre_pasado, nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
+    def editar_evento_teatro(self, nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
                              ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo):
         evento = self.events_theater[nombre_pasado]
-        evento.update(nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
+        evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
                       ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo)
 
-    def editar_evento_filantropico(self,nombre_pasado, nombre_nuevo, fecha_evento_nuevo,
+    def editar_evento_filantropico(self,nombre_pasado, fecha_evento_nuevo,
                           hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo,
                           direccion_nuevo, estado_nuevo):
         evento = self.events_philanthropic[nombre_pasado]
-        evento.update(nombre_nuevo, fecha_evento_nuevo, hora_apertura_nuevo,
+        evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
                       hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo)
 
     def crear_evento_bar(self, nombre_evento, fecha_evento, hora_apertura,
-                         hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa):
+                         hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa, aforo):
         aux, artista_dict = self.guardar_artistas(artistas, nombre_evento)
         evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                          ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa)
+                          ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa, aforo)
         self.letra = "b"
         self.events_bar[nombre_evento] = evento
         st.write(self.events_bar[nombre_evento].nombre)
@@ -156,16 +158,17 @@ class GestionController:
             return None
 
     def crear_evento_filantropico(self, nombre_evento, fecha_evento, hora_apertura,
-                                  hora_show, ubicacion, ciudad, direccion, patrocinadores, artistas):
+                                  hora_show, ubicacion, ciudad, direccion, patrocinadores, artistas,aforo):
         artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)
         self.events_philanthropic[nombre_evento] = \
             (EventPhilanthropic(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                                ubicacion, ciudad, direccion, artista_name_list, patrocinadores))
+                                ubicacion, ciudad, direccion, artista_name_list, patrocinadores,aforo))
 
     def crear_evento_teatro(self, nombre_evento, fecha_evento, hora_apertura, hora_show,
-                            ubicacion, ciudad, direccion, categorias, artistas, costo_alquiler, porcentaje_preventa):
+                            ubicacion, ciudad, direccion, categorias, artistas, costo_alquiler, porcentaje_preventa, aforo):
         artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)
         self.events_theater[nombre_evento] = \
             (EventTheater(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                          ubicacion, ciudad, direccion, categorias, artista_name_list, costo_alquiler, porcentaje_preventa))
+                          ubicacion, ciudad, direccion, categorias, artista_name_list, costo_alquiler, porcentaje_preventa, aforo))
+
 
