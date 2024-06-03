@@ -128,15 +128,17 @@ def dibujar_crear_evento_filantropico(gui_controler):
     artistas = []
     for i in range(num_artistas):
         nombre_artista = st.text_input(f"Nombre del artista {i+1}")
-        artistas.append({"nombre": nombre_artista, "tarifa": 0})
+        tarifa_comediante = st.number_input(f"Tarifa del comediante {i + 1}",
+                                            min_value=0.0)
+        artistas.append({"nombre": nombre_artista, "tarifa": tarifa_comediante})
 
     if hora_apertura > hora_show:
         st.warning("La hora de apertura debe ser anterior a la hora del show")
     elif st.button("Guardar"):
-        gui_controler.gestion_controler.crear_evento_filantropico(nombre_evento, fecha_evento, hora_apertura,
+        if gui_controler.gestion_controler.crear_evento_filantropico(nombre_evento, fecha_evento, hora_apertura,
                                                                   hora_show, ubicacion, ciudad, direccion,
-                                                                  patrocinadores, artistas,aforo)
-        st.success("¡Evento guardado exitosamente!")
+                                                                  patrocinadores, artistas,aforo):
+            st.success("¡Evento guardado exitosamente!")
 
 def dibujar_crear_evento_bar(gui_controler):
     st.subheader("Crear Evento Bar")
@@ -152,11 +154,11 @@ def dibujar_crear_evento_bar(gui_controler):
         "Porcentaje de reducción durante la preventa",
         min_value=0.0,
         value=0.0)
+
+    aforo = st.number_input("Aforo", min_value=1, value=1)
     num_categorias = st.number_input("Número de categorías",
                                      min_value=1,
                                      value=1)
-    aforo = st.number_input("Aforo", min_value=1, value=1)
-
     categorias = {}
     for i in range(num_categorias):
         nombre_categoria = st.text_input(f"Nombre de la categoría {i+1}")
@@ -192,11 +194,11 @@ def dibujar_crear_evento_bar(gui_controler):
     elif total_cortesias > aforo:
         st.warning("El total de cortesías debe ser menor o igual al aforo")
     elif st.button("Guardar"):
-        gui_controler.gestion_controler.crear_evento_bar(
+        if gui_controler.gestion_controler.crear_evento_bar(
             nombre_evento, fecha_evento, hora_apertura, hora_show, ubicacion,
             ciudad, direccion, categorias, comediantes,
-            porcentaje_reduccion_preventa, aforo, total_cortesias)
-        st.success("¡Evento guardado exitosamente!")
+            porcentaje_reduccion_preventa, aforo, total_cortesias):
+            st.success("¡Evento guardado exitosamente!")
 
 
 def dibujar_crear_evento_teatro(gui_controler):
@@ -250,11 +252,11 @@ def dibujar_crear_evento_teatro(gui_controler):
     elif total_cortesias > aforo:
         st.warning("El total de cortesías debe ser menor o igual al aforo")
     elif st.button("Guardar"):
-        gui_controler.gestion_controler.crear_evento_teatro(
+        if gui_controler.gestion_controler.crear_evento_teatro(
             nombre_evento, fecha_evento, hora_apertura, hora_show, ubicacion,
             ciudad, direccion, categorias, artistas, costo_alquiler,
-            porcentaje_reduccion_preventa, aforo, total_cortesias)
-        st.success("¡Evento guardado exitosamente!")
+            porcentaje_reduccion_preventa, aforo, total_cortesias):
+            st.success("¡Evento guardado exitosamente!")
 
 def dibujar_comprar_boletas(gui_controler):
     st.subheader("Comprar Boletas")
@@ -305,61 +307,65 @@ def generar_codigo(length=8):
 
 
 def generar_pdf_compra(info_cliente, ubicacion):
-    pdf_files = []
+    try:
+        os.makedirs("compras", exist_ok=True)
+        pdf_files = []
 
-    for i in range(info_cliente["cantidad_boletas"]):
-        # Generar un código único para cada PDF
-        codigo = generar_codigo()
-        pdf_path = f"compras/{codigo}.pdf"
-        pdf_files.append(pdf_path)
+        for i in range(info_cliente["cantidad_boletas"]):
+            codigo = generar_codigo()
+            pdf_path = f"compras/{codigo}.pdf"
+            c = canvas.Canvas(pdf_path, pagesize=letter)
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(100, 730, f"Datos de la Compra #{i + 1}:")
+            c.setFont("Helvetica", 10)
+            c.drawString(100, 710, f"Nombre del comprador: {info_cliente['nombre']}")
+            c.drawString(100, 690, f"Teléfono: {info_cliente['telefono']}")
+            c.drawString(100, 670, f"Correo electrónico: {info_cliente['correo']}")
+            c.drawString(100, 650, f"Dónde nos conoció: {info_cliente['donde_conocio']}")
+            c.drawString(100, 630, f"Evento: {info_cliente['evento']}")
+            c.drawString(100, 610, f"Ubicación: {ubicacion}")
+            c.drawString(100, 590, f"Método de pago: {info_cliente['metodo_pago']}")
+            c.drawString(100, 570, f"Código único: {codigo}")
+            c.save()
+            pdf_files.append(pdf_path)
 
-        # Crear el PDF
-        c = canvas.Canvas(pdf_path, pagesize=letter)
-        image_path = IMAGE_PATH_TICKETS
-        c.drawImage(image_path, 100, 750, width=200, height=50)
+        # Create a ZIP file with all PDFs
+        with zipfile.ZipFile("compras/comprobantes.zip", "w") as zipf:
+            for pdf_file in pdf_files:
+                zipf.write(pdf_file, os.path.basename(pdf_file))
 
-        # Escribir los datos de la compra en el PDF
-        c.drawString(100, 730, f"Datos de la Compra #{i + 1}:")
-        c.drawString(100, 710,
-                     f"Nombre del comprador: {info_cliente['nombre']}")
-        c.drawString(100, 690, f"Teléfono: {info_cliente['telefono']}")
-        c.drawString(100, 670, f"Correo electrónico: {info_cliente['correo']}")
-        c.drawString(100, 650,
-                     f"Dónde nos conoció: {info_cliente['donde_conocio']}")
-        c.drawString(100, 630, f"Evento: {info_cliente['evento']}")
-        c.drawString(100, 610, f"Ubicación: {ubicacion}")
-        c.drawString(100, 590, f"Código único: {codigo}")
 
-        # Guardar el PDF
-        c.save()
+        st.write("Descargar todas las boletas:")
+        st.download_button(label="Descargar Boletas",
+                           data=open("compras/comprobantes.zip", "rb").read(),
+                           file_name="comprobantes.zip",
+                           mime="application/zip")
 
-    with zipfile.ZipFile("compras/comprobantes.zip", "w") as zipf:
-        for pdf_file in pdf_files:
-            zipf.write(pdf_file, os.path.basename(pdf_file))
+        for i, pdf_file in enumerate(pdf_files):
+            st.write(f"Descargar Boleta #{i + 1}:")
+            st.download_button(label=f"Descargar Boleta #{i + 1}",
+                               data=open(pdf_file, "rb").read(),
+                               file_name=os.path.basename(pdf_file),
+                               mime="application/pdf")
 
-    st.write("Descarga todos tus comprobantes:")
-    st.download_button(label="Descargar Comprobantes",
-                       data=open("compras/comprobantes.zip", "rb").read(),
-                       file_name="comprobantes.zip",
-                       mime="application/zip")
-
+    except Exception as e:
+        st.error(f"Ocurre un error en: {str(e)}")
 
 def dibujar_generar_reporte(gui_controler):
     st.subheader("Generar reporte")
     tipo_reporte = st.radio("Selecciona el tipo de reporte", ["Reporte de Ventas", "Reporte Financiero", "Reporte de los Compradores", "Reporte de los Artistas"])
     if tipo_reporte == "Reporte de los Artistas":
         st.subheader("Elige el evento")
-        tipo_evento = st.selectbox("Tipo de evento", ["Bar", "Teatro"])
+        tipo_evento = st.selectbox("Selecciona el tipo de evento:", ["Bar", "Filantrópico", "Teatro"])
         evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento)
-        if evento_seleccionado != "":
-            st.button("Generar reporte del artista", on_click=gui_controler.guardar_reporte(tipo_reporte, evento_seleccionado))
+        gui_controler.generar_reporte(tipo_reporte, evento_seleccionado, tipo_evento)
     elif tipo_reporte == "Reporte de Ventas":
-        gui_controler.generar_reporte(tipo_reporte,None)
+        gui_controler.generar_reporte(tipo_reporte, None, None)
 
     elif tipo_reporte == "Reporte de los Compradores":
-        gui_controler.generar_reporte(tipo_reporte,None)
+        gui_controler.generar_reporte(tipo_reporte, None, None)
     else:
-        gui_controler.generar_reporte(tipo_reporte,None)
+        gui_controler.generar_reporte(tipo_reporte, None)
 
 
 def dibujar_verificar_asistencia(gui_controler):

@@ -21,4 +21,5 @@ class EventPhilanthropic(Event):
         self.ciudad = ciudad_nuevo
         self.direccion = direccion_nuevo
         self.estado = estado_nuevo
+        self.aforo = aforo_nuevo
 

@@ -33,4 +33,7 @@ class Event:
         }
         return boleteria_info
 
+    def get_ingreso(self):
+        return self.boleteria.get_ingreso()
+
 

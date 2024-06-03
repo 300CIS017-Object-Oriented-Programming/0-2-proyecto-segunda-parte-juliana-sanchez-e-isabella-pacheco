@@ -26,13 +26,23 @@ class GestionController:
         else:
             self.users[nombre_comprador].add_ids(id_boletas, nombre_evento)
 
-    def generar_reporte_artistas(self, nombre_artista):
-        artista = self.artist[nombre_artista]
-        eventos_list = artista.get_eventos()
-        info_evento = {}
-        for evento in eventos_list:
-            info_evento[evento] = [evento.get_info()]
-        generar_reporte_artistas(nombre_artista, info_evento)
+    def generar_reporte_artistas(self, tipo, nombre_evento):
+        if tipo == "Bar":
+            evento = self.events_bar[nombre_evento]
+        elif tipo == "Teatro":
+            evento = self.events_theater[nombre_evento]
+        else:
+            evento = self.events_philanthropic[nombre_evento]
+        info_evento = {
+            'tipo': tipo,
+            'nombre_evento': nombre_evento,
+            'fecha': evento.fecha,
+            'boletas_vendidas': evento.get_total_tickets_add(),
+            'ubicacion': evento.ubicacion,
+            'ingreso': evento.get_ingreso()*0.8,
+            'artistas': evento.artistas,
+        }
+        generar_reporte_artistas(info_evento)
 
     def generar_reporte_ventas(self):
         evento_info_bar = []
@@ -49,7 +59,7 @@ class GestionController:
         for evento in list(self.events_philanthropic.values()):
             if evento:
                 aux = {
-                    "patrocinadores": evento.patrocinadores,
+                    "patrocinadores": evento.sponsors,
                     "cantidad_boletas": evento.boleteria.tickets_sold,
                 }
                 evento_info_philanthropic.append(aux)
@@ -86,21 +96,20 @@ class GestionController:
         compradores_list = []
         for comprador in list(self.users.values()):
             info_cliente = {
-                "eventos": list(comprador.id_boletas.keys()),
+                "evento": list(comprador.id_boletas.keys())[0],
                 "nombre": comprador.nombre,
                 "telefono": comprador.telefono,
                 "correo": comprador.correo,
                 "direccion": comprador.direccion,
+                "cantidad_boletas": len(comprador.id_boletas)
             }
             compradores_list.append(info_cliente)
         generar_reporte_compradores(compradores_list)
 
     def guardar_artistas(self, artistas, nombre_evento):
-        artista_name_list = []
         artista_dict = {}
         for artista in artistas:
             flag = False
-            artista_name_list.append(artista["nombre"])
             artista_dict[artista["nombre"]] = artista["tarifa"]
             for artista_guardado in self.artist.values():
                 if artista_guardado.nombre == artista["nombre"]:
@@ -108,7 +117,7 @@ class GestionController:
                     flag = True
             if not flag:
                 self.artist[artista["nombre"]] = (Artist(artista["nombre"], nombre_evento))
-        return artista_name_list, artista_dict
+        return artista_dict
 
     def mostrar_categorias(self, nombre_evento, tipo):
         if tipo == "Bar":
@@ -205,10 +214,15 @@ class GestionController:
 
     def crear_evento_bar(self, nombre_evento, fecha_evento, hora_apertura,
                          hora_show, ubicacion, ciudad, direccion, categorias, artistas, porcentaje_preventa, aforo, total_cortesias):
-        aux, artista_dict = self.guardar_artistas(artistas, nombre_evento)
-        evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                          ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa, aforo, total_cortesias)
-        self.events_bar[nombre_evento] = evento
+        artista_dict = self.guardar_artistas(artistas, nombre_evento)
+        if nombre_evento not in self.events_theater and nombre_evento not in self.events_philanthropic and nombre_evento not in self.events_bar:
+            evento = EventBar(nombre_evento, fecha_evento, hora_apertura, hora_show,
+                              ubicacion, ciudad, direccion, categorias, artista_dict, porcentaje_preventa, aforo, total_cortesias)
+            self.events_bar[nombre_evento] = evento
+            return True
+        else:
+            st.warning("Ya existe un evento con ese nombre")
+            return False
 
     def get_events(self, tipo):
         if tipo == "Bar":
@@ -221,23 +235,32 @@ class GestionController:
         if eventos:
             return eventos
         else:
-            st.write("No se han encontrado eventos")
             return None
 
     def crear_evento_filantropico(self, nombre_evento, fecha_evento, hora_apertura,
                                   hora_show, ubicacion, ciudad, direccion, patrocinadores, artistas,aforo):
-        artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)
-        self.events_philanthropic[nombre_evento] = \
-            (EventPhilanthropic(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                                ubicacion, ciudad, direccion, artista_name_list, patrocinadores,aforo))
+        artista_name_list = self.guardar_artistas(artistas, nombre_evento)
+        if nombre_evento not in self.events_theater and nombre_evento not in self.events_philanthropic and nombre_evento not in self.events_bar:
+            self.events_philanthropic[nombre_evento] = \
+                (EventPhilanthropic(nombre_evento, fecha_evento, hora_apertura, hora_show,
+                                    ubicacion, ciudad, direccion, artista_name_list, patrocinadores,aforo))
+            return True
+        else:
+            st.warning("Ya existe un evento con ese nombre")
+            return False
 
     def crear_evento_teatro(self, nombre_evento, fecha_evento, hora_apertura, hora_show,
                             ubicacion, ciudad, direccion, categorias, artistas, costo_alquiler, porcentaje_preventa,
                             aforo, total_cortesias):
-        artista_name_list, aux = self.guardar_artistas(artistas, nombre_evento)
-        self.events_theater[nombre_evento] = \
-            (EventTheater(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                          ubicacion, ciudad, direccion, categorias, artista_name_list, costo_alquiler,
-                          porcentaje_preventa, aforo, total_cortesias))
+        artista_name_list = self.guardar_artistas(artistas, nombre_evento)
+        if nombre_evento not in self.events_theater and nombre_evento not in self.events_philanthropic and nombre_evento not in self.events_bar:
+            self.events_theater[nombre_evento] = \
+                (EventTheater(nombre_evento, fecha_evento, hora_apertura, hora_show,
+                              ubicacion, ciudad, direccion, categorias, artista_name_list, costo_alquiler,
+                              porcentaje_preventa, aforo, total_cortesias))
+            return True
+        else:
+            st.warning("Ya existe un evento con ese nombre")
+            return False
 
 

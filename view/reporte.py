@@ -2,12 +2,59 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 
-def generar_reporte_artistas(nombre_artista, info_evento):
-    pass
+def generar_reporte_artistas(info_evento):
+    st.subheader("Reporte de Artistas")
+
+    if info_evento:
+        datos_artistas = {}
+
+        # Recorrer todos los artistas del evento seleccionado
+        for artista, tarifa in info_evento["artistas"].items():
+            if info_evento["tipo"] == "Bar":
+                tarifi = info_evento["ingreso"] / len(info_evento["artistas"]) + tarifa
+            else:
+                tarifi = tarifa
+            # Si el artista ya existe en los datos_artistas, agregar la información del evento actual
+            datos_artistas[artista] = [{
+                "nombre_evento":
+                    info_evento["nombre_evento"],
+                "fecha":
+                    info_evento["fecha"],
+                "lugar":
+                    info_evento["ubicacion"],
+                "boletas_vendidas":
+                    info_evento["boletas_vendidas"],
+                "tarifa_artista":
+                    tarifi
+            }]
+
+        # Mostrar el reporte de artistas
+        if datos_artistas:
+            for artista, eventos_info in datos_artistas.items():
+                st.markdown(
+                    f"<h3 style='font-size: 20px;'>Artista: {artista}</h3>",
+                    unsafe_allow_html=True
+                )  # Aumentar tamaño del nombre del artista
+                for evento_info in eventos_info:
+                    st.write(
+                        f"Nombre del evento: {evento_info['nombre_evento']}")
+                    st.write(f"Fecha: {evento_info['fecha']}")
+                    st.write(f"Lugar: {evento_info['lugar']}")
+                    st.write(
+                        f"Boletas Vendidas: {evento_info['boletas_vendidas']}")
+                    st.write(
+                        f"Tarifa del artista: ${evento_info['tarifa_artista']}"
+                    )
+                    st.write("---")
+        else:
+            st.write("No hay datos de artistas para mostrar.")
+    else:
+        st.write("Evento no encontrado.")
 
 def generar_reporte_ventas(evento_info_bar, evento_info_filantropic, evento_info_teatro, clientes):
         st.subheader("Reporte de Ventas")
@@ -86,7 +133,7 @@ def generar_reporte_ventas(evento_info_bar, evento_info_filantropic, evento_info
                 st.write(f"Total Ingresos: ${total}")
                 st.write(
                     f"Se vendieron {cantidad_preventa} boletas en Preventa con ingreso total de ${ingreso_preventa}")
-                st.write(f"Se vendieton un total de {cantidad_boletas - cantidad_preventa} "
+                st.write(f"Se vendieton un total de {cantidad_boletas_regular} "
                          f"boletas en fase regular con un ingreso de ${ingresos - ingreso_preventa}")
                 for categoria, totalito in categorias.items():
                     if categoria != "cortesia":
@@ -97,7 +144,13 @@ def generar_reporte_ventas(evento_info_bar, evento_info_filantropic, evento_info
             st.table(clientes)
 
 def generar_reporte_financiero_bar(ingresos_metodo_pago, ingresos_categorias, pago_artistas, nombre_evento):
-    pass
+    st.write("Ingresos por método de pago:")
+    for metodo_pago, ingreso in ingresos_metodo_pago.items():
+        st.write(f"{metodo_pago}: ${ingreso:.2f}")
+
+    st.write("Ingresos por categoría de boletería:")
+    for categoria, ingreso in ingresos_categorias.items():
+        st.write(f"{categoria}: ${ingreso:.2f}")
 
 def generar_reporte_financiero_filantropico(patrocinadores,nombre_evento):
     pass
@@ -116,29 +169,40 @@ def generar_reporte_compradores(info_clientes):
         pdf_reporte = BytesIO()
         doc = SimpleDocTemplate(pdf_reporte, pagesize=letter)
 
+        # Crear estilo de párrafo
+        styles = getSampleStyleSheet()
+        styleN = styles['Normal']
+        styleH = styles['Heading1']
+
         # Convertir el DataFrame a una tabla de ReportLab
         data = [df_clientes.columns.tolist()] + df_clientes.values.tolist()
         table = Table(data)
 
         # Estilo de la tabla
-        style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), '#77DCE7'),
-                            ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),
-                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                            ('BACKGROUND', (0, 1), (-1, -1), '#E6F0ED'),
-                            ('GRID', (0, 0), (-1, -1), 1, '#ffffff')])
-
+        style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), '#77DCE7'),
+            ('TEXTCOLOR', (0, 0), (-1, 0), (0, 0, 0)),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), '#E6F0ED'),
+            ('GRID', (0, 0), (-1, -1), 1, '#ffffff')
+        ])
         table.setStyle(style)
 
         # Agregar la tabla al documento
-        doc.build([table])
+        elements = []
+        # elements.append(Paragraph('Reporte de Compradores', styleH)) # Comentado temporalmente
+        elements.append(table)
+        doc.build(elements)
 
         # Descargar el PDF
-        st.download_button(label="Descargar Reporte PDF",
-                           data=pdf_reporte.getvalue(),
-                           file_name="reporte_compradores.pdf",
-                           mime="application/pdf")
+        st.download_button(
+            label="Descargar Reporte PDF",
+            data=pdf_reporte.getvalue(),
+            file_name="reporte_compradores.pdf",
+            mime="application/pdf"
+        )
 
         # Mostrar la tabla de clientes
         st.table(df_clientes)
@@ -148,15 +212,15 @@ def generar_reporte_compradores(info_clientes):
 
         # Contar el número de boletas vendidas por evento
         for cliente in info_clientes:
-            evento_actual = cliente["eventos"][0]
+            evento_actual = cliente["evento"]
             boletas_actuales = cliente["cantidad_boletas"]
-            boletas_por_evento[evento_actual] = boletas_por_evento.get(
-                evento_actual, 0) + boletas_actuales
+            boletas_por_evento[evento_actual] = boletas_por_evento.get(evento_actual, 0) + boletas_actuales
 
         # Convertir el diccionario en un DataFrame de Pandas para la gráfica
         df_boletas_por_evento = pd.DataFrame(
             list(boletas_por_evento.items()),
-            columns=["Evento", "Boletas Vendidas"])
+            columns=["Evento", "Boletas Vendidas"]
+        )
 
         # Generar la gráfica de barras con el número de boletas vendidas por evento
         st.subheader("Gráfica de boletas vendidas por evento")

@@ -23,9 +23,6 @@ class GUIController:
         artistas_names = self.gestion_controler.artist.keys()
         return list(artistas_names)
 
-    def guardar_reporte(self, tipo, artista):
-        f = 6
-
     def sidebar_option_menu(self, opcion_seleccionada):
         if opcion_seleccionada == "Ver eventos creados":
             dibujar_eventos_creados(self)
@@ -42,9 +39,9 @@ class GUIController:
         else:
             dibujar_verificar_asistencia(self)
 
-    def generar_reporte(self, tipo_reporte, nombre):
+    def generar_reporte(self, tipo_reporte, nombre, tipo):
         if tipo_reporte == "Reporte de los Artistas":
-            self.gestion_controler.generar_reporte_artistas(nombre)
+            self.gestion_controler.generar_reporte_artistas(tipo, nombre)
         elif tipo_reporte == "Reporte de Ventas":
             self.gestion_controler.generar_reporte_ventas()
         elif tipo_reporte == "Reporte Financiero":
@@ -121,7 +118,8 @@ class GUIController:
                 st.write("Estado:", evento.estado)
                 st.write("Aforo:", evento.aforo)
                 st.write("Boletas vendidas:", evento.get_total_tickets_add())
-                st.write("Cortesias Disponibles:", evento.total_cortesias - evento.get_cortesias_vendidas())
+                if opcion_seleccionada == "Bar" or opcion_seleccionada == "Teatro":
+                    st.write("Cortesias Disponibles:", evento.total_cortesias - evento.get_cortesias_vendidas())
                 # Verificar si el estado del evento es "realizado"
                 if evento.estado != "Realizado" and evento.estado != "Cancelado":
                     list_names.append(evento.nombre)
@@ -130,8 +128,6 @@ class GUIController:
                 else:
                     st.write("El evento ya está realizado y no se puede editar.")
                 st.write("---")
-        else:
-            st.write("No hay eventos")
         return list_names
 
     def get_event_info(self, tipo, nombre):

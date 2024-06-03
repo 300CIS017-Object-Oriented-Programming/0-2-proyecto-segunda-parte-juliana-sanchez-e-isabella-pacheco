@@ -33,3 +33,9 @@ class Boleteria:
             boletas_info.append(aux)
         return boletas_info
 
+    def get_ingreso(self):
+        ingreso = 0
+        for ticket in self.tickets.values():
+            ingreso += ticket.precio
+        return ingreso
+
