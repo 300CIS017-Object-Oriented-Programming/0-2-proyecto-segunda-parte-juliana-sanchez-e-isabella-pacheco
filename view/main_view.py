@@ -76,7 +76,9 @@ def dibujar_editar_evento(gui_controler, evento, tipo):
     estado_input = st.selectbox("Estado del evento", ["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"],
                           index=["Realizado", "Por realizar", "Cancelado", "Aplazado", "Cerrado"].index(
                               evento["estado"].capitalize()), key="estado_evento")
-    preventa_estado_input = st.checkbox("Preventa", value=True)
+
+    if tipo != "Filantropico":
+        preventa_estado_input = st.checkbox("Preventa", value=evento["preventa"])
 
     # Solo permitir editar el costo del alquiler para eventos de tipo "Teatro"
     if tipo == "Teatro":
@@ -128,7 +130,9 @@ def dibujar_crear_evento_filantropico(gui_controler):
         nombre_artista = st.text_input(f"Nombre del artista {i+1}")
         artistas.append({"nombre": nombre_artista, "tarifa": 0})
 
-    if st.button("Guardar"):
+    if hora_apertura > hora_show:
+        st.warning("La hora de apertura debe ser anterior a la hora del show")
+    elif st.button("Guardar"):
         gui_controler.gestion_controler.crear_evento_filantropico(nombre_evento, fecha_evento, hora_apertura,
                                                                   hora_show, ubicacion, ciudad, direccion,
                                                                   patrocinadores, artistas,aforo)
@@ -183,7 +187,7 @@ def dibujar_crear_evento_bar(gui_controler):
             "tarifa": tarifa_comediante
         })
 
-    if hora_apertura >= hora_show:
+    if hora_apertura > hora_show:
         st.warning("La hora de apertura debe ser anterior a la hora del show")
     elif total_cortesias > aforo:
         st.warning("El total de cortesías debe ser menor o igual al aforo")

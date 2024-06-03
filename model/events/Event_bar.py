@@ -26,3 +26,8 @@ class EventBar(Event):
         self.estado_preventa = preventa
         self.aforo = aforo_nuevo
 
+    def get_total_pagado_artistas(self):
+        total = 0
+        for artista in list(self.artistas.values()):
+            total += artista
+        return total

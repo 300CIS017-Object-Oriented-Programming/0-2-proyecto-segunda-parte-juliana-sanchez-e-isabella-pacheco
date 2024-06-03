@@ -84,7 +84,7 @@ class GUIController:
             costo_categoria = categorias[categoria_elegida]
             total = cantidad_boletas * costo_categoria
             total -= total*porcentaje
-            if porcentaje < 1:
+            if porcentaje > 0:
                 st.write(f"Se le está aplicando un {porcentaje*100}% de descuento por estar comprando en preventa")
             st.write(f"Total a pagar: ${total}")
         else:
@@ -104,7 +104,7 @@ class GUIController:
                             cantidad_boletas, donde_conocio, metodo_pago, categoria, tipo):
         id_boletas = self.gestion_controler.guardar_boletas(nombre_comprador, tipo, evento_seleccionado,
                                                             cantidad_boletas, donde_conocio, metodo_pago, categoria)
-        self.gestion_controler.guardar_user_info(nombre_comprador, telefono, correo, direccion, id_boletas)
+        self.gestion_controler.guardar_user_info(evento_seleccionado, nombre_comprador, telefono, correo, direccion, id_boletas)
 
     def get_info_clientes(self, nombre_evento):
         info_clientes = self.gestion_controler.get_info_clientes(nombre_evento)
@@ -152,6 +152,8 @@ class GUIController:
                 "alquiler": alquiler,
                 "ciudad": evento.ciudad,
                 "direccion": evento.direccion,
-                "aforo": evento.aforo
+                "aforo": evento.aforo,
+                "preventa": evento.estado_preventa == "Preventa"
             }
+            print(evento.estado_preventa == "Preventa")
         return event_info

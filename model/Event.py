@@ -25,4 +25,12 @@ class Event:
     def update_status(self, estado):
         self.estado = estado
 
+    def get_boleteria_info(self):
+        boleteria_info ={
+            "cantidad_boletas": self.boleteria.tickets_sold,
+            "cantidad_cortesias": self.boleteria.courtesies_sold,
+            "boletas": self.boleteria.get_boletas_info()
+        }
+        return boleteria_info
+
 

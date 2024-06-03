@@ -15,6 +15,9 @@ class User:
                 return True
         return False
 
+    def add_ids(self, info, nombre_evento):
+        self.id_boletas[nombre_evento].append(info)
+
     def get_cantidad_boletas(self, nombre_evento):
         i = 0
         eventos = list(self.id_boletas.keys())

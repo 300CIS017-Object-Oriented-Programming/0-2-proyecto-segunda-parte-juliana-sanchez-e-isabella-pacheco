@@ -19,11 +19,12 @@ class GestionController:
         self.users = {}
         self.letra = "a"
 
-    def guardar_user_info(self, nombre_comprador, telefono, correo, direccion,id_boletas):
+    def guardar_user_info(self, nombre_evento, nombre_comprador, telefono, correo, direccion, id_boletas):
         if nombre_comprador not in self.users.keys():
-            self.users[nombre_comprador] = User(telefono, correo, direccion, id_boletas, nombre_comprador)
+            aux = {nombre_evento: id_boletas}
+            self.users[nombre_comprador] = User(telefono, correo, direccion, aux, nombre_comprador)
         else:
-            self.users[nombre_comprador].id_boletas.append(id_boletas)
+            self.users[nombre_comprador].add_ids(id_boletas, nombre_evento)
 
     def generar_reporte_artistas(self, nombre_artista):
         artista = self.artist[nombre_artista]
@@ -34,27 +35,52 @@ class GestionController:
         generar_reporte_artistas(nombre_artista, info_evento)
 
     def generar_reporte_ventas(self):
-        evento = None
-        if tipo_evento == 'bar':
-            evento = self.events_bar[nombre_evento]
-        elif tipo_evento == 'theater':
-            evento = self.events_theater[nombre_evento]
-        vendidas, ingresos_preventa, ingresos_regular = evento.get_boleteria_info()
-        generar_reporte_ventas(vendidas, ingresos_preventa, ingresos_regular, nombre_evento)
+        evento_info_bar = []
+        evento_info_philanthropic = []
+        evento_info_teatro = []
+        for evento in list(self.events_bar.values()):
+            if evento:
+                aux = evento.get_boleteria_info()
+                aux["categorias"] = evento.categorias
+                aux["costo_artistas"] = evento.get_total_pagado_artistas()
+                aux["nombre"] = evento.nombre
+                evento_info_bar.append(aux)
+
+        for evento in list(self.events_philanthropic.values()):
+            if evento:
+                aux = {
+                    "patrocinadores": evento.patrocinadores,
+                    "cantidad_boletas": evento.boleteria.tickets_sold,
+                }
+                evento_info_philanthropic.append(aux)
+
+        for evento in list(self.events_theater.values()):
+            if evento:
+                aux = evento.get_boleteria_info()
+                aux["categorias"] = evento.categorias
+                aux["costo_alquiler"] = evento.alquiler
+                evento_info_teatro.append(aux)
+
+        compradores_list = []
+        for comprador in list(self.users.values()):
+            info_cliente = {
+                "eventos": list(comprador.id_boletas.keys()),
+                "nombre": comprador.nombre,
+                "telefono": comprador.telefono,
+                "correo": comprador.correo,
+                "direccion": comprador.direccion,
+            }
+            compradores_list.append(info_cliente)
+        generar_reporte_ventas(evento_info_bar, evento_info_philanthropic, evento_info_teatro, compradores_list)
+
 
     def generar_reporte_financiero(self):
-        if tipo_evento == 'bar':
-            evento = self.events_bar[nombre_evento]
-            ingresos_metodo_pago, ingresos_categorias, pago_artistas = evento.get_financiero_info()
-            generar_reporte_financiero_bar(ingresos_metodo_pago, ingresos_categorias, pago_artistas, nombre_evento)
-        elif tipo_evento == 'theater':
-            evento = self.events_theater[nombre_evento]
-            ingresos_metodo_pago, ingresos_categorias, alquiler = evento.get_financiero_info()
-            generar_reporte_financiero_teatro(ingresos_metodo_pago, ingresos_categorias,alquiler,nombre_evento)
-        else:
-            evento = self.events_philanthropic[nombre_evento]
-            patrocinadores = evento.get_financiero_info()
-            generar_reporte_financiero_filantropico(patrocinadores, nombre_evento)
+        evento_info_bar = []
+        evento_info_philanthropic = []
+        evento_info_teatro = []
+        for evento in self.events_bar:
+            aux = evento.get_boleteria_info()
+            aux["categorias"] = evento.events_categorias
 
     def generar_reporte_compradores(self):
         compradores_list = []
@@ -89,7 +115,7 @@ class GestionController:
             evento = self.events_bar[nombre_evento]
         else:
             evento = self.events_theater[nombre_evento]
-        porcentaje = 1
+        porcentaje = 0
         if evento:
             if evento.estado_preventa:
                 porcentaje = evento.porcentaje_preventa
@@ -113,8 +139,7 @@ class GestionController:
     def guardar_boletas(self, nombre_comprador, tipo, evento_seleccionado, cantidad_boletas,
                         donde_conocio, metodo_pago, categoria):
         evento = None
-        id_list = {}
-        id_list[evento_seleccionado] = []
+        id_list = []
         if tipo == "Bar":
             evento = self.events_bar[evento_seleccionado]
         elif tipo == "Teatro":
@@ -127,7 +152,7 @@ class GestionController:
             fase = "Regular"
         id_initial = evento.get_total_tickets_add()
         for i in range(cantidad_boletas):
-            id_list[evento_seleccionado].append(id_initial + i)
+            id_list.append(id_initial + i)
             evento.add_boleta(nombre_comprador, metodo_pago, categoria,
                               fase, precio, donde_conocio, id_initial+i, evento_seleccionado)
         if evento.get_total_tickets_add() == evento.aforo:
@@ -149,22 +174,22 @@ class GestionController:
         evento = self.events_bar[nombre_pasado]
         if aforo_nuevo < evento.get_total_tickets_add():
             st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
-        elif evento.estado_preventa() > 0 and estado_nuevo == "Cancelado":
+        elif evento.get_total_tickets_add() > 0 and estado_nuevo == "Cancelado":
             st.warning("No se puede cancelar un evento con boleteria vendida")
         else:
             evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,
                           hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, preventa, aforo_nuevo)
 
     def editar_evento_teatro(self, nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
-                             ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, aforo_nuevo):
+                             ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, prevento_nuevo,aforo_nuevo):
         evento = self.events_theater[nombre_pasado]
         if aforo_nuevo < evento.get_total_tickets_add():
             st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
-        elif evento.estado_preventa() > 0 and estado_nuevo == "Cancelado":
+        elif evento.get_total_tickets_add()  > 0 and estado_nuevo == "Cancelado":
             st.warning("No se puede cancelar un evento con boleteria vendida")
         else:
             evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo, hora_show_nuevo,
-                          ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, aforo_nuevo)
+                          ubicacion_nuevo, ciudad_nuevo, direccion_nuevo, estado_nuevo, costo_alquiler_nuevo, prevento_nuevo,aforo_nuevo)
 
     def editar_evento_filantropico(self,nombre_pasado, fecha_evento_nuevo,
                           hora_apertura_nuevo, hora_show_nuevo, ubicacion_nuevo, ciudad_nuevo,
@@ -172,7 +197,7 @@ class GestionController:
         evento = self.events_philanthropic[nombre_pasado]
         if aforo_nuevo < evento.get_total_tickets_add():
             st.warning("El aforo no puede ser menor  la cantidad de boletas que ya se han vendido")
-        elif evento.estado_preventa() > 0 and estado_nuevo == "Cancelado":
+        elif evento.get_total_tickets_add() > 0 and estado_nuevo == "Cancelado":
             st.warning("No se puede cancelar un evento con boleteria vendida")
         else:
             evento.update(nombre_pasado, fecha_evento_nuevo, hora_apertura_nuevo,

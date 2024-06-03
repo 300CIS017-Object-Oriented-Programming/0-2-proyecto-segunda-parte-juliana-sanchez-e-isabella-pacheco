@@ -22,4 +22,14 @@ class Boleteria:
         else:
             self.tickets_sold += 1
 
+    def get_boletas_info(self):
+        boletas_info = []
+        for ticket in list(self.tickets.values()):
+            aux = {
+                "preventa": ticket.fase == "Preventa",
+                "precio": ticket.precio,
+                "categoria": ticket.categoria
+                }
+            boletas_info.append(aux)
+        return boletas_info
 

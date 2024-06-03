@@ -9,67 +9,89 @@ from reportlab.lib.pagesizes import letter
 def generar_reporte_artistas(nombre_artista, info_evento):
     pass
 
-def generar_reporte_ventas(vendidas, ingresos_preventa, ingresos_regular, nombre_evento):
+def generar_reporte_ventas(evento_info_bar, evento_info_filantropic, evento_info_teatro, clientes):
         st.subheader("Reporte de Ventas")
-
-        # Obtener la información de los eventos y clientes
-        eventos = obtener_eventos_guardados()
-        clientes = obtener_clientes_guardados()
 
         # Diccionario para almacenar las ventas por evento y categoría
         ventas = {}
 
         # Calcular las ventas por evento y categoría
-        for cliente in clientes:
-            evento = next((e for e in eventos if e["nombre"] == cliente["evento"]), None)
+        for evento in evento_info_bar:
             if evento:
-                tipo_evento = evento["tipo"]
-                cantidad_boletas = cliente["cantidad_boletas"]
+                cantidad_boletas_regular = 0
+                # Calcular los ingresos a partir del costo de las boletas vendidas
+                ingresos = 0
+                cantidad_cortesias = evento["cantidad_cortesias"]
+                cantidad_preventa = 0
+                ingreso_preventa = 0
+                categorias = {}
+                for boleta in evento["boletas"]:
+                    if boleta["preventa"]:
+                        cantidad_preventa += 1
+                        ingreso_preventa += boleta["precio"]
+                    else:
+                        cantidad_boletas_regular += 1
+                    ingresos += boleta["precio"]
+                    if boleta["categoria"] not in categorias:
+                        categorias[boleta["categoria"]] = 0
+                    categorias[boleta["categoria"]] += boleta["precio"]
+                # Calcular el costo de los comediantes
+                costo_artista = evento["costo_artistas"]
+                total = ingresos - (costo_artista)
+                st.write(f"Evento: {evento['nombre']}")
+                st.write(f"Total Ingresos Bar (20% retribución): ${total*0.2}")
+                st.write(f"{cantidad_cortesias} Cantidad de boletas")
+                st.write(f"Se vendieron {cantidad_preventa} boletas en Preventa con ingreso total de ${ingreso_preventa}")
+                st.write(f"Se vendieton un total de {cantidad_boletas_regular} "
+                         f"boletas en fase regular con un ingreso de ${ingresos - ingreso_preventa}")
+                for categoria, totalito in categorias.items():
+                    if categoria != "cortesia":
+                        st.write(f"Se obtuvo un ingreso de  ${totalito} en la categoria {categoria}")
+                st.write(f"Se vendieron {cantidad_cortesias} cortesias")
 
-                if tipo_evento == "Filantrópico":
-                    # Calcular los ingresos a partir de los aportes de los patrocinadores
-                    ingresos = sum(p["aporte"] for p in evento["patrocinadores"]) - sum(
-                        a["tarifa"] for a in evento["artistas"])
-                    costo_artista = sum(a["tarifa"] for a in evento["artistas"])
-                    costo_alquiler = 0
-                elif tipo_evento == "Teatro":
-                    # Calcular los ingresos a partir del costo de las boletas vendidas por categoría
-                    ingresos = sum(
-                        cantidad_boletas * c["costo"] for c in evento["categoria"] if c["nombre"] == "Boleta")
-                    # Calcular el costo de los artistas y el costo de alquiler
-                    costo_artista = sum(a["tarifa"] for a in evento["artistas"])
-                    costo_alquiler = evento["costo_alquiler"]
-                elif tipo_evento == "Bar":
-                    # Calcular los ingresos a partir del costo de las boletas vendidas
-                    ingresos = sum(
-                        c["costo"] * cantidad_boletas for c in evento["categoria"] if c["nombre"] == "Boleta")
-                    # Calcular el costo de los comediantes
-                    costo_artista = sum(a["tarifa"] for a in evento["artistas"])
-                    costo_alquiler = 0
+        for evento in evento_info_filantropic:
+            if evento:
+                # Calcular los ingresos a partir de los aportes de los patrocinadores
+                ingresos = 0
+                for patrocinador in evento["patrocinadores"].values():
+                    ingresos += patrocinador
+                st.write(f"Evento: {evento['nombre']}")
+                st.write(f"Ingresos totales por los aportes de los patrocinadores: {ingresos}")
+                st.write(f"Se vendieron {evento['cantidad_boletas']} boletas")
 
-                total = ingresos - (costo_artista + costo_alquiler)
 
-                if evento["nombre"] not in ventas:
-                    ventas[evento["nombre"]] = {"ingresos": 0, "boletas_vendidas": 0, "costo_artista": 0,
-                                                "costo_alquiler": 0}
+        for evento in evento_info_teatro:
+            if evento:
+                cantidad_boletas_regular = 0
+                ingresos = 0
+                cantidad_cortesias = evento["cantidad_cortesias"]
+                cantidad_preventa = 0
+                ingreso_preventa = 0
+                categorias = {}
+                for boleta in evento["boletas"]:
+                    precio = boleta["precio"]
+                    if boleta["preventa"]:
+                        cantidad_preventa += 1
+                        ingreso_preventa += precio - precio*0.07
+                    else:
+                        cantidad_boletas_regular += 1
+                    ingresos += precio - precio*0.07
+                    if categorias[boleta["categoria"]] not in categorias:
+                        categorias[boleta["categoria"]] = 0
+                    categorias[boleta["categoria"]] += precio - precio
 
-                ventas[evento["nombre"]]["ingresos"] += ingresos
-                ventas[evento["nombre"]]["boletas_vendidas"] += cantidad_boletas
-                ventas[evento["nombre"]]["costo_artista"] += costo_artista
-                ventas[evento["nombre"]]["costo_alquiler"] += costo_alquiler
-                ventas[evento["nombre"]]["total"] = total
-
-        # Mostrar el reporte de ventas por evento
-        for evento, info in ventas.items():
-            st.write(f"Evento: {evento}")
-            st.write(f"Total Ingresos: ${info['ingresos'] + info['costo_artista'] + info['costo_alquiler']}")
-            st.write(f"Boletas Vendidas: {info['boletas_vendidas']}")
-            if info['costo_artista']:
-                st.write(f"Costo de los Artistas: ${info['costo_artista']}")
-            if info['costo_alquiler']:
-                st.write(f"Costo de Alquiler: ${info['costo_alquiler']}")
-            st.write(f"Total: ${info['total']}")
-            st.write("---")
+                costo_alquiler = evento["costo_alquiler"]
+                total = ingresos - costo_alquiler
+                st.write(f"Evento: {evento['nombre']}")
+                st.write(f"Total Ingresos: ${total}")
+                st.write(
+                    f"Se vendieron {cantidad_preventa} boletas en Preventa con ingreso total de ${ingreso_preventa}")
+                st.write(f"Se vendieton un total de {cantidad_boletas - cantidad_preventa} "
+                         f"boletas en fase regular con un ingreso de ${ingresos - ingreso_preventa}")
+                for categoria, totalito in categorias.items():
+                    if categoria != "cortesia":
+                        st.write(f"Se obtuvo un ingreso de  ${totalito} en la categoria {categoria}")
+                st.write(f"Se vendieron {cantidad_cortesias} cortesias")
 
         if clientes:
             st.table(clientes)
