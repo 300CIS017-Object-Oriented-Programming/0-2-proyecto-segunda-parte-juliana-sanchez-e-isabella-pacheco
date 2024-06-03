@@ -61,12 +61,7 @@ classDiagram
         + Boleta()
     }
 
-    class DashBoardManager {
-        +create()
-        +read()
-        +update()
-    }
-    
+
     class Artist {
         - name
         - events : list[string]
@@ -74,28 +69,25 @@ classDiagram
         + add_event()
         + get_events()
     }
+    
     class User {
         - username : string
         - password : string
         - email : string
         - address : string
+        - tickets : list[int]
+        - events : list[string]
+        + Admin()
+        + add_event()
+        + get_report()
+        + Buyer()
+        +buy_ticket()
+        +get_ticket_pdf
         + User()
         + get_username()
     }
 
-    class Admin {
-        - events : list[string]
-        dashboard_admin : Dash_board_manager
-        + Admin()
-        + add_event()
-        + get_report()
-    }
-    class Buyer {
-        - tickets : list[int]
-        + Buyer()
-        +buy_ticket()
-        +get_ticket_pdf
-    }
+    
 
     class MainView {
         +draw_registration_page()
@@ -138,22 +130,6 @@ classDiagram
         + generar()
     }
 
-    class ReporteVentas {
-        + ReporteVentas()
-        + generar() : override
-    }
-
-    class ReporteCompradores {
-        + ReporteCompradores()
-        + generar() : override
-    }
-
-    class ReporteArtista {
-        +ReporteArtista()
-        - artista : Artist
-        + generar() : override
-    }
-
     GUIControler <.. App : launches
     Event <-- EventBar : is-a
     Event <-- EventTheater : is-a
@@ -163,15 +139,10 @@ classDiagram
     GestionControler o-- Event : has
     GestionControler o-- User : has
     GestionControler o-- Artist : has
-    GestionControler --> Report : has
-    Report <-- ReporteVentas : is-a
-    Report <-- ReporteCompradores : is-a
-    Report <-- ReporteArtista : is-a
+    GestionControler ..> Report : uses
     Event --> Boleteria : has
     Boleteria o-- Boleta : has
     ReporteArtista --> Artist : has
-    User <-- Admin : is-a
-    User <-- Buyer : is-a
     Admin ..> DashBoardManager : uses
     
      
