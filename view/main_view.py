@@ -2,22 +2,72 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 
 from controllers import gui_controler
-from settings import LOGO_HTML_CONFIG, IMAGE_PATH_TICKETS
+from settings import LOGO_HTML_CONFIG, IMAGE_PATH_TICKETS, URL_IMAGES
+import time
 import os
 import random
 import string
 import zipfile
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import matplotlib.pyplot as plt
 
 
+def dibujar_dashboard(gui_controler):
+    st.subheader("Dashboard")
+
+    # Selección de intervalo de fechas
+    fecha_inicio = st.date_input("Fecha de inicio")
+    fecha_fin = st.date_input("Fecha de fin")
+
+    if fecha_inicio > fecha_fin:
+        st.error("La fecha de inicio no puede ser posterior a la fecha de fin.")
+        return
+
+    # Obtener eventos creados en el intervalo seleccionado
+    eventos_bar = [evento for evento in gui_controler.gestion_controler.events_bar.values() if fecha_inicio <= evento.fecha <= fecha_fin]
+    eventos_filantropicos = [evento for evento in gui_controler.gestion_controler.events_philanthropic.values() if fecha_inicio <= evento.fecha <= fecha_fin]
+    eventos_teatro = [evento for evento in gui_controler.gestion_controler.events_theater.values() if fecha_inicio <= evento.fecha <= fecha_fin]
+
+
+    if eventos_bar or eventos_filantropicos or eventos_teatro:
+        st.write("Eventos creados en el intervalo seleccionado:")
+        for evento in eventos_bar:
+            st.write(f"Nombre: {evento.nombre}, Tipo: Bar, Ingresos: {evento.get_ingreso()}")
+        for evento in eventos_filantropicos:
+            st.write(f"Nombre: {evento.nombre}, Tipo: Filantrópico, Ingresos: {evento.get_ingreso()}")
+        for evento in eventos_teatro:
+            st.write(f"Nombre: {evento.nombre}, Tipo: Teatro, Ingresos: {evento.get_ingreso()}")
+    else:
+        st.write("No hay eventos creados en el intervalo seleccionado.")
+
+
+    nombres_eventos = [evento.nombre for evento in eventos_bar + eventos_filantropicos + eventos_teatro]
+    ingresos_eventos = [evento.get_ingreso() for evento in eventos_bar + eventos_filantropicos + eventos_teatro]
+
+    plt.bar(nombres_eventos, ingresos_eventos)
+    plt.xlabel("Evento")
+    plt.ylabel("Ingresos")
+    plt.title("Ingresos por Evento")
+    plt.xticks(rotation=45, ha='right')
+    st.pyplot(plt)
+
+
+    tipos_eventos = ["Bar", "Filantrópico", "Teatro"]
+    num_eventos = [len(eventos_bar), len(eventos_filantropicos), len(eventos_teatro)]
+
+    plt.bar(tipos_eventos, num_eventos)
+    plt.xlabel("Tipo de Evento")
+    plt.ylabel("Número de Eventos")
+    plt.title("Número de Eventos por Tipo")
+    st.pyplot(plt)
 
 def navegation_sidebar(gui_controler):
     with st.sidebar:
         opcion_seleccionada = option_menu("Navegación",
                                           ["Ver eventos creados", "Crear evento Bar",
                                            "Crear evento Filantrópico", "Crear evento Teatro",
-                                           "Comprar boletas", "Generar reporte", "Verificar asistencia"], orientation="vertical")
+                                           "Comprar boletas", "Generar reporte", "Verificar asistencia", "Dashboard"], orientation="vertical")
     gui_controler.sidebar_option_menu(opcion_seleccionada)
 
 
@@ -118,11 +168,11 @@ def dibujar_crear_evento_filantropico(gui_controler):
     direccion = st.text_input("Dirección")
     num_patrocinadores = st.number_input("Número de patrocinadores", min_value=1, value=1)
     aforo = st.number_input("Aforo", min_value=1, value=1)
-    patrocinadores = []
+    patrocinadores = {}
     for i in range(num_patrocinadores):
         nombre_patrocinador = st.text_input(f"Nombre del patrocinador {i+1}")
         aporte_patrocinador = st.number_input(f"Aporte del patrocinador {i+1}", min_value=0.0)
-        patrocinadores.append({"nombre": nombre_patrocinador, "aporte": aporte_patrocinador})
+        patrocinadores[nombre_patrocinador] = aporte_patrocinador
 
     num_artistas = st.number_input("Número de artistas participantes", min_value=1, value=1)
     artistas = []
@@ -365,7 +415,10 @@ def dibujar_generar_reporte(gui_controler):
     elif tipo_reporte == "Reporte de los Compradores":
         gui_controler.generar_reporte(tipo_reporte, None, None)
     else:
-        gui_controler.generar_reporte(tipo_reporte, None)
+        st.subheader("Elige el evento")
+        tipo_evento = st.selectbox("Selecciona el tipo de evento:", ["Bar", "Filantrópico", "Teatro"])
+        evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento)
+        gui_controler.generar_reporte(tipo_reporte, evento_seleccionado, tipo_evento)
 
 
 def dibujar_verificar_asistencia(gui_controler):

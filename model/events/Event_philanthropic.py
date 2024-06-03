@@ -23,3 +23,8 @@ class EventPhilanthropic(Event):
         self.estado = estado_nuevo
         self.aforo = aforo_nuevo
 
+    def get_total_pagado_artistas(self):
+        total = 0
+        for artista in list(self.artistas.values()):
+            total += artista
+        return total

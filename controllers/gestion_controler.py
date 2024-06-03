@@ -3,7 +3,7 @@ import streamlit as st
 from view.reporte import (generar_reporte_artistas, generar_reporte_ventas, generar_reporte_financiero_bar,
                           generar_reporte_financiero_teatro, generar_reporte_financiero_filantropico,
                           generar_reporte_compradores)
-from model.events.Event_bar import EventBar 
+from model.events.Event_bar import EventBar
 from model.events.Event_philanthropic import EventPhilanthropic
 from model.events.Event_theater import EventTheater
 from model.Artist import Artist
@@ -59,6 +59,7 @@ class GestionController:
         for evento in list(self.events_philanthropic.values()):
             if evento:
                 aux = {
+                    "nombre": evento.nombre,
                     "patrocinadores": evento.sponsors,
                     "cantidad_boletas": evento.boleteria.tickets_sold,
                 }
@@ -69,6 +70,7 @@ class GestionController:
                 aux = evento.get_boleteria_info()
                 aux["categorias"] = evento.categorias
                 aux["costo_alquiler"] = evento.alquiler
+                aux["nombre"] = evento.nombre
                 evento_info_teatro.append(aux)
 
         compradores_list = []
@@ -84,13 +86,20 @@ class GestionController:
         generar_reporte_ventas(evento_info_bar, evento_info_philanthropic, evento_info_teatro, compradores_list)
 
 
-    def generar_reporte_financiero(self):
-        evento_info_bar = []
-        evento_info_philanthropic = []
-        evento_info_teatro = []
-        for evento in self.events_bar:
-            aux = evento.get_boleteria_info()
-            aux["categorias"] = evento.events_categorias
+    def generar_reporte_financiero(self, tipo, nombre_evento):
+        if tipo == "Bar":
+            pass
+        if tipo == "Teatro":
+            pass
+        if tipo == "Filantrópico":
+            evento = self.events_philanthropic[nombre_evento]
+            info_evento = {
+                'patrocinadores': evento.sponsors,
+                'nombre': evento.nombre,
+                'costo_artistas': evento.get_total_pagado_artistas(),
+            }
+            generar_reporte_financiero_filantropico(info_evento)
+
 
     def generar_reporte_compradores(self):
         compradores_list = []
@@ -116,7 +125,7 @@ class GestionController:
                     artista_guardado.add_event(nombre_evento)
                     flag = True
             if not flag:
-                self.artist[artista["nombre"]] = (Artist(artista["nombre"], nombre_evento))
+                self.artist[artista["nombre"]] = Artist(artista["nombre"], nombre_evento)
         return artista_dict
 
     def mostrar_categorias(self, nombre_evento, tipo):
@@ -243,7 +252,7 @@ class GestionController:
         if nombre_evento not in self.events_theater and nombre_evento not in self.events_philanthropic and nombre_evento not in self.events_bar:
             self.events_philanthropic[nombre_evento] = \
                 (EventPhilanthropic(nombre_evento, fecha_evento, hora_apertura, hora_show,
-                                    ubicacion, ciudad, direccion, artista_name_list, patrocinadores,aforo))
+                                    ubicacion, ciudad, direccion, artista_name_list, patrocinadores, aforo))
             return True
         else:
             st.warning("Ya existe un evento con ese nombre")

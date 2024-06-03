@@ -2,7 +2,7 @@ import streamlit as st
 from controllers.gestion_controler import  GestionController
 from view.main_view import (draw_admin_page, dibujar_eventos_creados, dibujar_crear_evento_bar,
                             dibujar_crear_evento_filantropico, dibujar_crear_evento_teatro,
-                            dibujar_comprar_boletas, dibujar_generar_reporte, dibujar_verificar_asistencia)
+                            dibujar_comprar_boletas, dibujar_generar_reporte, dibujar_verificar_asistencia, dibujar_dashboard)
 
 
 class GUIController:
@@ -36,8 +36,11 @@ class GUIController:
             dibujar_comprar_boletas(self)
         elif opcion_seleccionada == "Generar reporte":
             dibujar_generar_reporte(self)
-        else:
+        elif opcion_seleccionada == "Verificar asistencia":
             dibujar_verificar_asistencia(self)
+        else:
+            dibujar_dashboard(self)
+
 
     def generar_reporte(self, tipo_reporte, nombre, tipo):
         if tipo_reporte == "Reporte de los Artistas":
@@ -45,7 +48,7 @@ class GUIController:
         elif tipo_reporte == "Reporte de Ventas":
             self.gestion_controler.generar_reporte_ventas()
         elif tipo_reporte == "Reporte Financiero":
-            self.gestion_controler.generar_reporte_financiero()
+            self.gestion_controler.generar_reporte_financiero(tipo, nombre)
         else:
             self.gestion_controler.generar_reporte_compradores()
 
@@ -75,7 +78,8 @@ class GUIController:
 
             nombre_categorias = list(categorias.keys())
             if cortesia_total <= cortesias_vendidas:
-                nombre_categorias.remove("cortesia")
+                if "cortesia" in nombre_categorias:
+                    nombre_categorias.remove("cortesia")
             categoria_elegida = st.selectbox("Categoría:", nombre_categorias)
             # Obtener el costo de la categoría seleccionada
             costo_categoria = categorias[categoria_elegida]

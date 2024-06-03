@@ -144,19 +144,68 @@ def generar_reporte_ventas(evento_info_bar, evento_info_filantropic, evento_info
             st.table(clientes)
 
 def generar_reporte_financiero_bar(ingresos_metodo_pago, ingresos_categorias, pago_artistas, nombre_evento):
-    st.write("Ingresos por método de pago:")
-    for metodo_pago, ingreso in ingresos_metodo_pago.items():
-        st.write(f"{metodo_pago}: ${ingreso:.2f}")
+   pass
 
-    st.write("Ingresos por categoría de boletería:")
-    for categoria, ingreso in ingresos_categorias.items():
-        st.write(f"{categoria}: ${ingreso:.2f}")
+def generar_reporte_financiero_filantropico(evento_info):
+    st.subheader("Reporte Financiero")
 
-def generar_reporte_financiero_filantropico(patrocinadores,nombre_evento):
-    pass
+    ingresos = 0
+    for patrocinador in evento_info["patrocinadores"].values():
+        ingresos += patrocinador
 
-def generar_reporte_financiero_teatro(ingresos_metodo_pago, ingresos_categorias,alquiler,nombre_evento):
-    pass
+    st.write(f"Evento: {evento_info['nombre']}")
+    st.write(f"\nSe le ha pagado a los artista un total de ${evento_info['costo_artistas']} ")
+    st.write("Los patrocinasdores:")
+    st.table(evento_info["patrocinadores"])
+    st.write(f"Se ha obtenido un total de ${ingresos-evento_info['costo_artistas']}")
+
+def generar_reporte_financiero_teatro(evento):
+    cantidad_boletas_regular = 0
+    ingresos = 0
+    cantidad_cortesias = evento["cantidad_cortesias"]
+    metodos = {"Tarjeta" : 0,
+               "Trasnferencia" : 0,
+               "Efectivo": 0
+    }
+    cantidad_preventa = 0
+    ingreso_preventa = 0
+    ganancias_taquill = 0
+    categorias = {}
+    for boleta in evento["boletas"]:
+        precio = boleta["precio"]
+        if boleta["preventa"]:
+            cantidad_preventa += 1
+            ingreso_preventa += precio - precio * 0.07
+        else:
+            cantidad_boletas_regular += 1
+        ingresos += precio - precio * 0.07
+        ganancias_taquill += precio * 0.07
+        if categorias[boleta["categoria"]] not in categorias:
+            categorias[boleta["categoria"]] = 0
+        categorias[boleta["categoria"]] += precio - precio
+        if boleta["metodo"] == "Transferencia bancaria":
+            metodos["Trasnferencia"] += precio
+        elif boleta["metodo"] == "Efectivo":
+            metodos["Efectivo"] += precio
+        else:
+            metodos["Tarjeta"] += precio
+
+    costo_alquiler = evento["costo_alquiler"]
+    total = ingresos - costo_alquiler
+    st.subheader("Reporte Financiero")
+    st.write(f"Evento: {evento['nombre']}")
+    st.write(f"Total ganancia: {ingresos-evento['costo_alquiler']}")
+    st.write(f"Se ha pagado ${evento['costo_alquiler']} por alquiler")
+    st.write(
+        f"Se vendieron {cantidad_preventa} boletas en Preventa con ingreso total de ${ingreso_preventa}")
+    st.write(f"Se vendieton un total de {cantidad_boletas_regular} "
+             f"boletas en fase regular con un ingreso de ${ingresos - ingreso_preventa}")
+    for categoria, totalito in categorias.items():
+        if categoria != "cortesia":
+            st.write(f"Se obtuvo un ingreso de  ${totalito} en la categoria {categoria}")
+    st.write(f"Se vendieron {cantidad_cortesias} cortesias")
+    st.write(f"La taquilla ha retenido un total de ${ganancias_taquill}")
+    st.table(metodos)
 
 def generar_reporte_compradores(info_clientes):
     st.subheader("Reporte de Compradores")
