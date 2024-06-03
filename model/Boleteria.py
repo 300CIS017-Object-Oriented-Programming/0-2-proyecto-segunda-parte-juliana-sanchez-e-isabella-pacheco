@@ -39,3 +39,15 @@ class Boleteria:
             ingreso += ticket.precio
         return ingreso
 
+    def get_financiero_info(self):
+        boletas_info = []
+        for ticket in list(self.tickets.values()):
+            aux = {
+                "preventa": ticket.fase == "Preventa",
+                "precio": ticket.precio,
+                "categoria": ticket.categoria,
+                "metodo": ticket.metodo_pago
+            }
+            boletas_info.append(aux)
+        return boletas_info
+

@@ -36,4 +36,11 @@ class Event:
     def get_ingreso(self):
         return self.boleteria.get_ingreso()
 
+    def get_financiero_info(self):
+        info = {
+            "boletas": self.boleteria.get_financiero_info(),
+            "cantidad_cortesias": self.boleteria.courtesies_sold,
+        }
+        return info
+
 

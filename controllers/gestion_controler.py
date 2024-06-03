@@ -69,7 +69,7 @@ class GestionController:
             if evento:
                 aux = evento.get_boleteria_info()
                 aux["categorias"] = evento.categorias
-                aux["costo_alquiler"] = evento.alquiler
+                aux["costo_alquiler"] = evento.alquiler_price
                 aux["nombre"] = evento.nombre
                 evento_info_teatro.append(aux)
 
@@ -88,9 +88,21 @@ class GestionController:
 
     def generar_reporte_financiero(self, tipo, nombre_evento):
         if tipo == "Bar":
-            pass
+            evento = self.events_bar[nombre_evento]
+            aux = evento.get_financiero_info()
+            aux["categorias"] = evento.categorias
+            aux["nombre"] = evento.nombre
+            aux["costo_artistas"] = evento.get_total_pagado_artistas()
+            generar_reporte_financiero_bar(aux)
         if tipo == "Teatro":
-            pass
+            evento = self.events_theater[nombre_evento]
+            aux = evento.get_financiero_info()
+            aux["categorias"] = evento.categorias
+
+            aux["nombre"] = evento.nombre
+            aux["costo_alquiler"] = evento.alquiler_price
+            generar_reporte_financiero_teatro(aux)
+
         if tipo == "Filantrópico":
             evento = self.events_philanthropic[nombre_evento]
             info_evento = {
