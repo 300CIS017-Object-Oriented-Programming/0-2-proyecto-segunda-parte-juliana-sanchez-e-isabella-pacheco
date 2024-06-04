@@ -123,7 +123,7 @@ def generar_reporte_ventas(evento_info_bar, evento_info_filantropic, evento_info
                     else:
                         cantidad_boletas_regular += 1
                     ingresos += precio - precio*0.07
-                    if categorias[boleta["categoria"]] not in categorias:
+                    if boleta["categoria"] not in categorias:
                         categorias[boleta["categoria"]] = 0
                     categorias[boleta["categoria"]] += precio - precio
 
@@ -164,7 +164,7 @@ def generar_reporte_financiero_bar(evento):
             cantidad_boletas_regular += 1
         ingresos += precio - precio * 0.07
         ganancias_taquill += precio * 0.07
-        if categorias[boleta["categoria"]] not in categorias:
+        if boleta["categoria"] not in categorias:
             categorias[boleta["categoria"]] = 0
         categorias[boleta["categoria"]] += precio - precio
         if boleta["metodo"] == "Transferencia bancaria":
@@ -224,7 +224,7 @@ def generar_reporte_financiero_teatro(evento):
             cantidad_boletas_regular += 1
         ingresos += precio - precio * 0.07
         ganancias_taquill += precio * 0.07
-        if categorias[boleta["categoria"]] not in categorias:
+        if boleta["categoria"] not in categorias:
             categorias[boleta["categoria"]] = 0
         categorias[boleta["categoria"]] += precio - precio
         if boleta["metodo"] == "Transferencia bancaria":

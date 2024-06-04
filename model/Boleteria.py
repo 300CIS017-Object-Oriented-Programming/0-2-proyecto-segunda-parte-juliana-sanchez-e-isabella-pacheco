@@ -1,6 +1,5 @@
 from model.Boleta import Boleta
 
-
 class Boleteria:
     def __init__(self):
         self.tickets = {}

@@ -87,14 +87,14 @@ class GestionController:
 
 
     def generar_reporte_financiero(self, tipo, nombre_evento):
-        if tipo == "Bar":
+        if tipo == "Bar" and len(self.events_bar) > 0:
             evento = self.events_bar[nombre_evento]
             aux = evento.get_financiero_info()
             aux["categorias"] = evento.categorias
             aux["nombre"] = evento.nombre
             aux["costo_artistas"] = evento.get_total_pagado_artistas()
             generar_reporte_financiero_bar(aux)
-        if tipo == "Teatro":
+        if tipo == "Teatro" and len(self.events_theater) > 0:
             evento = self.events_theater[nombre_evento]
             aux = evento.get_financiero_info()
             aux["categorias"] = evento.categorias
@@ -103,7 +103,7 @@ class GestionController:
             aux["costo_alquiler"] = evento.alquiler_price
             generar_reporte_financiero_teatro(aux)
 
-        if tipo == "Filantrópico":
+        if tipo == "Filantrópico" and len(self.events_philanthropic) > 0:
             evento = self.events_philanthropic[nombre_evento]
             info_evento = {
                 'patrocinadores': evento.sponsors,
@@ -181,6 +181,7 @@ class GestionController:
         else:
             fase = "Regular"
         id_initial = evento.get_total_tickets_add()
+        print(cantidad_boletas)
         for i in range(cantidad_boletas):
             id_list.append(id_initial + i)
             evento.add_boleta(nombre_comprador, metodo_pago, categoria,
@@ -283,5 +284,4 @@ class GestionController:
         else:
             st.warning("Ya existe un evento con ese nombre")
             return False
-
 

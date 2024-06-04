@@ -1,5 +1,3 @@
-
-
 class Boleta:
     def __init__(self, nombre_comprador, metodo_pago, categoria, fase, precio,donde_conocio, nombre_evento):
         self.nombre_evento = nombre_evento

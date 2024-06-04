@@ -73,7 +73,7 @@ def navegation_sidebar(gui_controler):
 
 def draw_admin_page(gui_controler):
     st.markdown(LOGO_HTML_CONFIG, unsafe_allow_html=True)
-    st.markdown("<h1 style='text-align: center;'>Bienvenido a Gonzalo Shows</h1>", unsafe_allow_html=True) 
+    st.markdown("<h1 style='text-align: center;'>Bienvenido a Gonzalo Shows</h1>", unsafe_allow_html=True)
     st.markdown("<h3 style='font-weight:500;text-align: center;'>"
                 "Gracias por usar nuestro software, ¿Qué deseas hacer?</h2>", unsafe_allow_html=True)
     navegation_sidebar(gui_controler)
@@ -425,19 +425,13 @@ def dibujar_verificar_asistencia(gui_controler):
     st.subheader("Verificar Asistencia")
     tipo_evento_seleccionado = st.radio("Selecciona el tipo de evento:",
                                         ["Filantrópico", "Bar", "Teatro"])
-    nombres_eventos = gui_controler.get_nombres_eventos(tipo_evento_seleccionado)
-    evento_seleccionado = st.selectbox("Selecciona el evento:",
-                                       nombres_eventos, key="nombre_asistencia")
 
+    evento_seleccionado = gui_controler.get_nombres_eventos(tipo_evento_seleccionado)
     clientes = gui_controler.get_info_clientes(evento_seleccionado)
-
     asistentes_por_evento = {}
-
+    print(clientes)
     if clientes:
-        nombres_clientes = []
-        for cliente in clientes:
-            nombres_clientes.append(cliente["nombre"])
-
+        nombres_clientes = [cliente["nombre"] for cliente in clientes]
         nombres_clientes.append("Todos")
         cliente_seleccionado = st.selectbox("Selecciona el cliente:",
                                             nombres_clientes)
@@ -452,39 +446,28 @@ def dibujar_verificar_asistencia(gui_controler):
             )
 
         if cliente_seleccionado != "Todos":
-
-            cliente = next((c for c in clientes
-                            if c["nombre"] == cliente_seleccionado), None)
+            cliente = next((c for c in clientes if c["nombre"] == cliente_seleccionado), None)
             if cliente:
-                st.write(
-                    f"Comprador: {cliente['nombre']} - Evento: {evento_seleccionado}"
-                )
+                st.write(f"Comprador: {cliente['nombre']} - Evento: {evento_seleccionado}")
 
-                checkboxes_disponibles = [
-                    i for i in range(1, cliente["cantidad"] + 1)
-                    if i not in selected_checkboxes
-                ]
-                if checkboxes_disponibles:
-                    for i in checkboxes_disponibles:
-                        checkbox_label = f"Boleta {i}"
 
-                        checkbox_state = st.checkbox(checkbox_label,
-                                                     key=f"{state_key}_{i}")
-                        if checkbox_state:
 
-                            asistentes_por_evento[
-                                evento_seleccionado] = asistentes_por_evento.get(
-                                evento_seleccionado, 0) + 1
+                for i in range(cliente["cantidad"]):
+                    print(cliente["cantidad"])
+                    checkbox_label = f"Boleta {i + 1}"
 
-                            if i not in selected_checkboxes:
-                                selected_checkboxes.append(i)
-                        elif i in selected_checkboxes:
-                            # Si el checkbox está deseleccionado pero estaba seleccionado previamente, eliminarlo de la lista guardada
-                            selected_checkboxes.remove(i)
+
+                    checkbox_state = st.checkbox(checkbox_label, key=f"{state_key}_{i + 1}", value=i + 1 in selected_checkboxes)
+                    if checkbox_state:
+                        asistentes_por_evento[evento_seleccionado] = asistentes_por_evento.get(evento_seleccionado, 0) + 1
+
+                        if i + 1 not in selected_checkboxes:
+                            selected_checkboxes.append(i + 1)
+                    elif i + 1 in selected_checkboxes:
+
+                        selected_checkboxes.remove(i + 1)
         else:
-            st.write(
-                "No se puede mostrar la lista de checkboxes para todos los clientes."
-            )
+            st.write("No se puede mostrar la lista de checkboxes para todos los clientes.")
 
         # Guardar la lista de checkboxes seleccionados en el estado de la sesión
         st.session_state[state_key] = selected_checkboxes

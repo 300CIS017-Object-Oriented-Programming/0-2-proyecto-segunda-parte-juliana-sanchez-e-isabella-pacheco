@@ -84,18 +84,21 @@ class GUIController:
             # Obtener el costo de la categoría seleccionada
             costo_categoria = categorias[categoria_elegida]
             total = cantidad_boletas * costo_categoria
-            total -= total*porcentaje
+            total -= total * porcentaje
             if porcentaje > 0:
-                st.write(f"Se le está aplicando un {porcentaje*100}% de descuento por estar comprando en preventa")
+                st.write(f"Se le está aplicando un {porcentaje * 100}% de descuento por estar comprando en preventa")
             st.write(f"Total a pagar: ${total}")
         else:
             st.write("Entrada gratuita")
+            return "Filantrópico"  # DEBUG (CORREGIR)
+
         if categoria_elegida != "cortesia" and cantidad_boletas + vendidas > aforo:
-            st.warning("Se están tratando de comprar mas boletas de las disponibles")
+            st.warning("Se están tratando de comprar más boletas de las disponibles")
             return None
         elif categoria_elegida == "cortesia" and cantidad_boletas + cortesias_vendidas > cortesia_total:
-            st.warning("Se están tratando de comprar mas cortesias de las disponibles")
+            st.warning("Se están tratando de comprar más cortesías de las disponibles")
             return None
+
         return categoria_elegida
 
     def get_ubicacion(self, nombre_evento, tipo):
@@ -157,3 +160,4 @@ class GUIController:
             }
             print(evento.estado_preventa == "Preventa")
         return event_info
+

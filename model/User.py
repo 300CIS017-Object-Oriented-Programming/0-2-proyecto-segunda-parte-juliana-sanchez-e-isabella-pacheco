@@ -20,9 +20,11 @@ class User:
 
     def get_cantidad_boletas(self, nombre_evento):
         i = 0
+        print(self.id_boletas)
         eventos = list(self.id_boletas.keys())
+        print(eventos)
         for evento in eventos:
             if nombre_evento == evento:
-                i+=1
+                i += self.id_boletas[evento][-1] + 1
         return i
 
